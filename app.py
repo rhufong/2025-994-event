@@ -23,27 +23,27 @@ recently_deleted_submission = None
 recently_edited_submission = None  # <-- NEW: stores (subid, previous_data)
 
 
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghostfest2025")
 
+# ←— 1) Use the Render disk when RENDER=true —→
 if os.environ.get("RENDER") == "true":
-    # Running on Render, use persistent disk path
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/ghostfest.db'
 else:
-    # Local development - use local relative file
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ghostfest.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# ←— INSERT THIS BLOCK —→
+# ←— 2) Create your tables once at startup under Gunicorn —→
 @app.before_first_request
 def initialize_database():
     create_tables()
-# ←— END INSERTION —→
 
 print("Running app.py from:", os.path.abspath(__file__))
 print(">>> ABSOLUTE PATH THIS APP.PY:", os.path.abspath(__file__))
+
 
 # ---- MODELS ----
 class SysState(db.Model):
@@ -1118,7 +1118,7 @@ def admin_history():
 
 # (No debug_options route)
 
-# ---- MURL HEALTH CHECK ----
+# ←— 3) Health‑check endpoint for Render —→
 @app.route("/healthz")
 def health_check():
     return "OK"
