@@ -25,7 +25,7 @@ recently_edited_submission = None  # <-- NEW: stores (subid, previous_data)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghostfest2025")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ghostfest.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/ghostfest.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 print("Running app.py from:", os.path.abspath(__file__))
@@ -1101,7 +1101,6 @@ def admin_history():
 # =======================
 #   END ADMIN ROUTES
 # =======================
-
 
 # (No debug_options route)
 
