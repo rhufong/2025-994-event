@@ -36,13 +36,16 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# — Create all tables immediately on startup —
+# — your create_tables() definition goes here —
+def create_tables():
+    db.create_all()
+    # … etc …
+
+# — immediately invoke it, now that it's defined —
 with app.app_context():
     create_tables()
 
 print("Running app.py from:", os.path.abspath(__file__))
-print(">>> ABSOLUTE PATH THIS APP.PY:", os.path.abspath(__file__))
-
 
 # ---- MODELS ----
 class SysState(db.Model):
