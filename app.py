@@ -1,5 +1,6 @@
 import sys
 import os
+import pathlib
 import json
 import io
 from datetime import datetime, timedelta, timezone
@@ -26,11 +27,17 @@ recently_edited_submission = None  # <-- NEW: stores (subid, previous_data)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghostfest2025")
 
-# ←— 1) Use the Render disk when RENDER=true —→
-if os.environ.get("RENDER") == "true":
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/ghostfest.db'
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ghostfest.db'
+# ─── Determine DB path ───────────────────────────────────────────
+# if RENDER=true (set in Render’s Environment), use the persistent /data disk,
+# otherwise fall back to a local ghostfest.db in your project root.
+use_render = os.environ.get("RENDER", "").lower() == "true"
+db_file   = "/data/ghostfest.db" if use_render else pathlib.Path(__file__).parent / "ghostfest.db"
+
+# ensure the directory exists (especially /data on Render)
+os.makedirs(os.path.dirname(str(db_file)), exist_ok=True)
+
+print(f"👉 Using SQLite DB at: {db_file}")
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_file}"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
