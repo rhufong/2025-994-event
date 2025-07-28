@@ -35,13 +35,15 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# ←— INSERT THIS BLOCK —→
+@app.before_first_request
+def initialize_database():
+    create_tables()
+# ←— END INSERTION —→
+
 print("Running app.py from:", os.path.abspath(__file__))
 print(">>> ABSOLUTE PATH THIS APP.PY:", os.path.abspath(__file__))
-
-# ---- MURL HEALTH CHECK ----
-@app.route("/healthz")
-def health_check():
-    return "OK"
 
 # ---- MODELS ----
 class SysState(db.Model):
@@ -1115,6 +1117,11 @@ def admin_history():
 # =======================
 
 # (No debug_options route)
+
+# ---- MURL HEALTH CHECK ----
+@app.route("/healthz")
+def health_check():
+    return "OK"
 
 if __name__ == "__main__":
     with app.app_context():
