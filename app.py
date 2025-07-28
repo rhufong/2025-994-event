@@ -36,9 +36,8 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# ←— 2) Create your tables once at startup under Gunicorn —→
-@app.before_first_request
-def initialize_database():
+# — Create all tables immediately on startup —
+with app.app_context():
     create_tables()
 
 print("Running app.py from:", os.path.abspath(__file__))
