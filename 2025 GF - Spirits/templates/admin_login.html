@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      height: 100vh;
+      background: #f9fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: #fffbe8;
+      border-radius: 18px;
+      box-shadow: 0 2px 14px #ffe06640;
+      padding: 2.2rem 2.3rem 1.8rem 2.3rem;
+      min-width: 320px;
+      max-width: 98vw;
+    }
+    .login-title {
+      font-size: 1.48rem;
+      font-weight: 700;
+      color: #987b12;
+      text-align: center;
+      margin-bottom: 1.2em;
+    }
+    .form-label {
+      color: #876c0a;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: #ffe066;
+      color: #876c0a;
+      border: none;
+      font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: #fffbe7;
+      color: #987b12;
+      border: 1.5px solid #ffe066;
+    }
+    .alert {
+      margin-bottom: 1em;
+      font-size: 1em;
+    }
+    /* Last login section styles */
+    .last-login {
+      margin-bottom: 1.5em;
+      padding: 0.8rem 1rem;
+      background: #fff3cd;
+      border-radius: 10px;
+      color: #987b12;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 0 10px #ffe06680;
+    }
+    .last-login ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: #6c584c;
+      font-weight: 500;
+    }
+    .last-login ul li {
+      margin-bottom: 0.3em;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="login-title">Admin Login</div>
+
+    <!-- Last login times display -->
+    <div class="last-login">
+      <h6>Last Login Times:</h6>
+      <ul>
+        {% if last_logins %}
+          {% for user, last_time in last_logins.items() %}
+            <li>{{ user }}: {{ last_time.strftime("%Y-%m-%d %I:%M %p") }}</li>
+          {% endfor %}
+        {% else %}
+          <li>No login records found.</li>
+        {% endif %}
+      </ul>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form method="POST" autocomplete="off">
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input type="text" name="username" id="username" class="form-control" 
+               placeholder="owner, Lily, Admin" required autocomplete="off">
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" name="password" id="password" class="form-control" placeholder="Password" required autocomplete="off">
+      </div>
+      <div class="d-grid">
+        <button class="btn btn-primary py-2" type="submit">Login</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

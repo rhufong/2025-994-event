@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<style>
+.is-invalid { border-color: #dc3545 !important; }
+</style>
+<head>
+  <meta charset="UTF-8" />
+  <title>👻 2025 Ghost Festival Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap & DataTables -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+  <style>
+    /* ================= STATS CARD STYLES ================ */
+    .card-stat { width: 10rem; min-height: 5rem; background-color: #cce5ff; border: none; margin: 0.5rem; }
+    .card-yellow { background-color: #fff3cd !important; }
+    .card-yellow .card-body { padding: 0.4rem 0.4rem 0.2rem; }
+    .card-stat .card-body { padding: 0.4rem; text-align: center; }
+    .card-stat h6 { margin-bottom: 0.2rem; font-size: 0.8rem; color: #987b12; }
+    .card-stat h3 { margin: 0; font-size: 1.8rem; font-weight: 700; color: #ba9515; }
+    .card-yellow h3 { font-size: 2.2rem; margin-bottom: 0; }
+    .card-stat small { display: block; margin-top: 0.3rem; font-size: 1rem; font-weight: 600; color: #555; }
+  </style>
+</head>
+<body>
+<!-- ================= HEADER =================== -->
+<nav class="navbar navbar-light bg-white border-bottom py-2">
+  <div class="container-fluid">
+    <span class="h5 mb-0 text-secondary">👻 2025 Ghost Festival Dashboard</span>
+    <div>
+      <span class="badge bg-info text-dark me-2">
+        {{ is_owner and 'Owner' or 'Admin' }}
+      </span>
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid py-3">
+
+ <!-- ================== STATS CARDS ==================== -->
+{% set display_names = {
+  "ancestor": "祖先 Ancestor",
+  "debtors": "冤亲债主 Debtors",
+  "dog": "狗狗 Dogs",
+  "wandering": "无主孤魂 Spirits",
+  "baby": "婴灵 Baby"
+} %}
+
+<div class="d-flex flex-nowrap justify-content-center align-items-center mb-4" style="gap:22px;overflow-x:auto;">
+  <!-- Main totals -->
+  <div class="card card-stat card-yellow" style="min-width:142px;max-width:148px;min-height:74px;height:78px;display:flex;align-items:center;">
+    <div class="card-body d-flex flex-column justify-content-center align-items-center" style="padding:0.3rem;text-align:center;height:100%;">
+      <h6 style="font-size:0.83rem;margin:0;">Submissions</h6>
+      <h3 style="font-size:1.65rem;margin:0 auto;text-align:center;line-height:1;font-weight:800;width:100%;display:flex;justify-content:center;align-items:center;">{{ num_orders }}</h3>
+      <div></div>
+    </div>
+  </div>
+  <div class="card card-stat card-yellow" style="min-width:142px;max-width:148px;min-height:74px;height:78px;display:flex;align-items:center;">
+    <div class="card-body d-flex flex-column justify-content-center align-items-center" style="padding:0.3rem;text-align:center;height:100%;">
+      <h6 style="font-size:0.83rem;margin:0;">Total Paid</h6>
+      <h3 style="font-size:1.65rem;margin:0 auto;text-align:center;line-height:1;font-weight:800;width:100%;display:flex;justify-content:center;align-items:center;">RM{{ "{:,}".format(total_paid) }}</h3>
+      <div></div>
+    </div>
+  </div>
+  <div class="card card-stat card-yellow" style="min-width:142px;max-width:148px;min-height:74px;height:78px;display:flex;align-items:center;">
+    <div class="card-body d-flex flex-column justify-content-center align-items-center" style="padding:0.3rem;text-align:center;height:100%;">
+      <h6 style="font-size:0.83rem;margin:0;">Total Order</h6>
+      <h3 style="font-size:1.65rem;margin:0 auto;text-align:center;line-height:1;font-weight:800;width:100%;display:flex;justify-content:center;align-items:center;">RM{{ "{:,}".format(total_order) }}</h3>
+      <div></div>
+    </div>
+  </div>
+  {% set valid_options = ["祖先", "冤亲债主", "无主孤魂", "婴灵", "狗狗"] %}
+  {% set display_names = {
+    "祖先": "祖先 Ancestor",
+    "冤亲债主": "冤亲债主 Debtors",
+    "无主孤魂": "无主孤魂 Spirits",
+    "婴灵": "婴灵 Baby",
+    "狗狗": "狗狗 Dogs"
+  } %}
+  {% for opt_label in valid_options %}
+    {% set stats = option_stats.get(opt_label, {'total':0,'male':0,'female':0,'unknown':0}) %}
+    <div class="card card-stat" style="min-width:135px;max-width:145px;min-height:70px;height:74px;">
+      <div class="card-body" style="padding:0.3rem;text-align:center;">
+        <h6 style="font-size:0.83rem;margin:0;">{{ display_names[opt_label] }}</h6>
+        <h3 style="font-size:2.05rem;margin:0;text-align:center;line-height:1;font-weight:800;">
+          {{ stats.total }}<br>
+          <small style="font-size:0.76rem;font-weight:400;line-height:1;margin-top:3px;">
+            M: {{ stats.male }} | F: {{ stats.female }}
+          </small>
+        </h3>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- ============ CONTROL BAR ============ -->
+<style>
+  #globalSearch { max-width: 200px; }
+  #filterType, #filterValue { max-width: 120px; }
+  .dropdown-menu.p-3 { max-height: 300px; overflow-y: auto; }
+</style>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+
+  <!-- === UNDO TOOLBAR: Place after stats cards, before filter/control bar === -->
+  <div class="d-flex align-items-center mb-2" id="admin-toolbar">
+    <button id="undoDeleteBtn" class="btn btn-secondary btn-sm me-2" style="display:none;">
+      <i class="fa-solid fa-arrow-rotate-left"></i> Undo Delete
+    </button>
+    <button id="undoEditBtn" class="btn btn-warning btn-sm me-2" style="display:none;">
+      <i class="fa-solid fa-rotate-left"></i> Undo Edit
+    </button>
+    <span id="undoMsg" class="fw-bold" style="display:none; margin-left:10px;"></span>
+  </div>
+
+  <!-- Global Search Bar -->
+  <input id="globalSearch" type="text" class="form-control form-control-sm" placeholder="🔍 Search all…" value="{{ search }}"/>
+
+  <!-- Filter Type Dropdown -->
+  <select id="filterType" class="form-select form-select-sm">
+    <option value="">Filter by…</option>
+    <option value="option"  {% if filter_type=='option'  %}selected{% endif %}>Entry Option</option>
+    <option value="gender"  {% if filter_type=='gender'  %}selected{% endif %}>Gender</option>
+    <option value="name"    {% if filter_type=='name'    %}selected{% endif %}>Name</option>
+    <option value="date"    {% if filter_type=='date'    %}selected{% endif %}>Date</option>
+    <option value="order"   {% if filter_type=='order'   %}selected{% endif %}>Order ID</option>
+    <option value="paid"    {% if filter_type=='paid'    %}selected{% endif %}>Paid Status</option>  <!-- Added -->
+  </select>
+
+  <!-- Filter Value Input Container -->
+  <span id="filterValueContainer">
+    <input id="filterValue" type="text" class="form-control form-control-sm" placeholder="Value" value="{{ filter_value }}"/>
+  </span>
+
+  <!-- Action Buttons -->
+  <button id="applyFilter" class="btn btn-sm btn-primary">Apply</button>
+  <button id="clearFilter" class="btn btn-sm btn-outline-secondary">Clear Filters</button>
+  <button id="refreshDashboard" class="btn btn-sm btn-secondary">Refresh</button>
+  <a href="{{ url_for('export_excel') }}" class="btn btn-sm btn-success">Export Excel</a>
+  <a href="{{ url_for('backup_db') }}" class="btn btn-sm btn-secondary">Backup DB</a>
+  <a href="{{ url_for('admin_history') }}" class="btn btn-sm btn-outline-info">History</a>
+
+  <!-- Changed pause button from form submit to button for AJAX -->
+  <button id="pauseResumeBtn" class="btn btn-sm btn-outline-warning" type="button">
+    {{ pause and 'Resume Submissions' or 'Pause Submissions' }}
+  </button>
+
+  <!-- ZOOM CONTROL (wider) -->
+  <div class="input-group input-group-sm ms-2" style="width:160px; min-width:140px;">
+    <span class="input-group-text">Zoom</span>
+    <select id="zoomTable" class="form-select form-select-sm" style="min-width:100px;">
+      <option value="1.0" selected>100%</option>
+      <option value="0.15">15%</option>
+      <option value="0.4">40%</option>
+      <option value="0.7">70%</option>
+      <option value="0.8">80%</option>
+      <option value="0.9">90%</option>
+      <option value="1.1">110%</option>
+      <option value="1.2">120%</option>
+    </select>
+  </div>
+
+  <!-- ENTRIES PER PAGE -->
+  <div class="input-group input-group-sm ms-2" style="width:135px; min-width:110px; max-width:150px;">
+    <span class="input-group-text">Per page</span>
+    <select id="perPageSelect" class="form-select form-select-sm">
+      <option value="10" {% if per_page==10 %}selected{% endif %}>10</option>
+      <option value="20" {% if per_page==20 %}selected{% endif %}>20</option>
+      <option value="30" {% if per_page==30 %}selected{% endif %}>30</option>
+      <option value="50" {% if per_page==50 %}selected{% endif %}>50</option>
+      <option value="100" {% if per_page==100 %}selected{% endif %}>100</option>
+    </select>
+  </div>
+
+  <!-- Column Toggle Dropdown -->
+  <div class="dropdown ms-auto">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Columns</button>
+    <div class="dropdown-menu p-3">
+      {% set cols = ['#','Time','Order ID','Boat','Gender','Chinese Name','English Name','Phone','Payment Method','Total','Paid','Amount Paid','Remarks','Entries','Actions'] %}
+      {% for col in cols %}
+      <div>
+        <label class="form-check-label">
+          <input type="checkbox" class="form-check-input toggle-col" data-col="{{ loop.index }}" checked>
+          {{ col }}
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ============== MAIN TABLE =============== -->
+<style>
+  .collapse-row { white-space: nowrap; overflow-x: auto; }
+  .table-hover tbody tr:hover { background-color: #fffde8; }
+  .toggle-paid, .remind-btn, .edit-btn, .delete-btn { font-size: 0.8rem; padding: 0.25rem 0.5rem; }
+
+  .actions-cell {
+    min-width: 90px;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+  .action-icon {
+    font-size: 1rem;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1;
+    text-decoration: none !important;
+    padding: 0 3px;
+  }
+  .action-icon i {
+    font-size: 1.08em;
+  }
+  .actions-cell .action-icon,
+  .actions-cell a,
+  .actions-cell a:visited,
+  .actions-cell a:active,
+  .actions-cell a:focus {
+    text-decoration: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+</style>
+
+<div class="table-responsive">
+  <table id="adminTable" class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th><th>Time</th><th>Order ID</th><th>Boat</th><th>Gender</th>
+        <th>Chinese Name</th><th>English Name</th><th>Phone</th><th>Payment Method</th>
+        <th>Total</th><th>Paid</th><th>Amount Paid</th><th>Remarks</th>
+        <th>Entries</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <!-- ========== 1. Main Submission Data Columns ========== -->
+        <td>{{ loop.index + (pagination.page-1)*pagination.per_page }}</td>
+        <td>{{ o.date.strftime('%Y-%m-%d') }}<br>{{ o.date.strftime('%I:%M %p') }}</td>
+        <td>{{ o.order_id }}</td>
+        <td>{{ o.boat|capitalize }}</td>
+        <td>{{ o.gender=='male' and 'M' or 'F' }}</td>
+        <td>{{ o.name_cn }}</td>
+        <td>{{ o.name_en }}</td>
+        <td>{{ o.phone }}</td>
+        <td>
+          {% if o.payment_method.lower() == 'bank_transfer' %}BANK
+          {% elif o.payment_method.lower() == 'tng' %}TNG
+          {% else %}{{ o.payment_method.upper() }}
+          {% endif %}
+        </td>
+        <td>RM {{ o.total }}</td>
+        <!-- ========== 2. Payment Status Column ========== -->
+        <td>
+          <button class="btn btn-sm btn-outline-{{ o.paid and 'success' or 'danger' }} toggle-paid" data-id="{{ o.id }}">
+            {{ o.paid and 'Paid' or 'Unpaid' }}
+          </button>
+        </td>
+        <!-- ========== 3. Amount Paid Column ========== -->
+        <td>
+          <input type="number" class="form-control form-control-sm amount-paid amt-box" data-id="{{ o.id }}" value="{{ o.payment_amount or 0 }}" />
+        </td>
+
+        <style>
+        /* Make Amount Paid input box smaller */
+        .amt-box {
+          width: 60px;
+          min-width: 60px;
+          max-width: 120px;
+          font-size: 0.93rem;
+          padding: 2px 4px;
+          text-align: right;
+        }
+        </style>
+
+        <!-- ========== 4. Remarks Column ========== -->
+        <td>
+          <input type="text" class="form-control form-control-sm remarks" data-id="{{ o.id }}" value="{{ o.remarks }}"/>
+        </td>
+        <!-- ========== 5. Entries Details Column ========== -->
+        <td class="collapse-row">
+          <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#ent{{o.id}}">Details</button>
+          <div class="collapse mt-1" id="ent{{o.id}}">
+            {% set option_names = {
+              "祖先": "祖先 Ancestor",
+              "冤亲债主": "冤亲债主 Debtors",
+              "无主孤魂": "无主孤魂 Spirits",
+              "婴灵": "婴灵 Baby",
+              "狗狗": "狗狗 Dogs"
+            } %}
+            {% set gender_names = {
+              "male": "男",
+              "female": "女"
+            } %}
+            {% set calendar_names = {
+              "English": "（阳历）",
+              "Lunar": "（农历）",
+              "": "Not sure"
+            } %}
+            {% for e in o.enriched_entries %}
+              <div style="margin-bottom: 4px;">
+                <small>
+                  <strong>{{ loop.index }}. {{ option_names.get(e.option, e.option) }}</strong>
+                  ｜ {{ e.name_cn }} ({{ gender_names.get(e.gender, e.gender) }})
+                  ｜ {{ e.death_date_label or calendar_names.get(e.calendar, 'Not sure') }}
+                </small>
+              </div>
+            {% endfor %}
+          </div>
+        </td>
+
+        <!-- ========== 6. Actions Column ========== -->
+        <td class="actions-cell">
+          <a href="#" class="remind-btn" data-id="{{o.id}}" title="Remind" style="color:#25D366;">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+          <a href="#" class="edit-btn" data-id="{{o.id}}" title="Edit" style="color:#1877f2;">
+            <i class="fa-solid fa-pen"></i>
+          </a>
+          <a href="#" class="delete-btn" data-id="{{o.id}}" title="Delete" style="color:#e74c3c;">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Explanation:
+1. Main Submission Data Columns = all the simple info (time, order id, names, etc)
+2. Payment Status Column = the paid/unpaid toggle button
+3. Amount Paid Column = inline input for paid amount
+4. Remarks Column = inline input for remarks
+5. Entries Details Column = button for collapse/expand, showing entries (edit this block for sorted/named entries)
+6. Actions Column = Remind, Edit, Delete buttons
+-->
+
+<!-- ============== PAGINATION CONTROLS ============= -->
+<nav aria-label="Page navigation" class="mt-3">
+  <ul class="pagination justify-content-center">
+    {% if pagination.has_prev %}
+    <li class="page-item"><a class="page-link" href="?page={{pagination.prev_num}}&per_page={{per_page}}">&laquo;</a></li>
+    {% endif %}
+    {% for p in pagination.iter_pages() %}
+      {% if p %}
+      <li class="page-item {% if p==pagination.page %}active{% endif %}"><a class="page-link" href="?page={{p}}&per_page={{per_page}}">{{p}}</a></li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{pagination.next_num}}&per_page={{per_page}}">&raquo;</a></li>
+    {% endif %}
+  </ul>
+</nav>
+
+<!-- ============== OPTION STATS MODAL ============= -->
+<style>#optionStatsModal .modal-body { max-height: 400px; overflow-y: auto; }</style>
+<div class="modal fade" id="optionStatsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Option Stats</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm">
+          <thead><tr><th>Option</th><th>Total</th><th>Male</th><th>Female</th><th>Unknown</th></tr></thead>
+          <tbody>
+            {% for opt_label, stats in option_stats.items() %}
+            <tr><td>{{ opt_label }}</td><td>{{ stats.total }}</td><td>{{ stats.male }}</td><td>{{ stats.female }}</td><td>{{ stats.unknown }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EDIT MODAL ============= -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:600px;">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title">Edit Submission</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <input type="hidden" id="editSubId" name="subid"/>
+
+          <!-- Basic Info -->
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="editBoat" class="form-label">Boat</label>
+              <select id="editBoat" name="boat" class="form-select">
+                <option value="yes">yes</option>
+                <option value="no">no</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="editGender" class="form-label">Gender</label>
+              <select id="editGender" name="gender" class="form-select">
+                <option value="male">male</option>
+                <option value="female">female</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="editNameCn" class="form-label">Chinese Name</label>
+              <input type="text" id="editNameCn" name="name_cn" class="form-control"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="editNameEn" class="form-label">English Name</label>
+              <input type="text" id="editNameEn" name="name_en" class="form-control"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="editPhone" class="form-label">Phone</label>
+              <input type="text" id="editPhone" name="phone" class="form-control"/>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="editPaymentMethod" class="form-label">Payment Method</label>
+              <select id="editPaymentMethod" name="payment_method" class="form-select">
+                <option value="tng">tng</option>
+                <option value="bank_transfer">bank_transfer</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label for="editCount" class="form-label">Count</label>
+              <input type="number" id="editCount" name="count" class="form-control" min="1"/>
+            </div>
+            <div class="col-12 col-md-4">
+              <label for="editTotal" class="form-label">Total</label>
+              <input type="number" id="editTotal" name="total" class="form-control" min="0"/>
+            </div>
+            <div class="col-12 col-md-4">
+              <label for="editPaymentAmount" class="form-label">Amount Paid</label>
+              <input type="number" id="editPaymentAmount" name="payment_amount" class="form-control"/>
+            </div>
+            <div class="col-12">
+              <label for="editRemarks" class="form-label">Remarks</label>
+              <input type="text" id="editRemarks" name="remarks" class="form-control"/>
+            </div>
+          </div>
+
+          <hr/>
+
+          <!-- Entries -->
+          <h6 class="mb-3">Entries</h6>
+          <div id="editEntriesContainer" class="row g-3">
+            <!-- JS will inject each entry here as its own .col-12 border p-3 -->
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="saveEditBtn" class="btn btn-primary w-100 w-md-auto me-md-2">Save Changes</button>
+        <button type="button" class="btn btn-outline-secondary w-100 w-md-auto" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============= LAST UPDATED & REFRESH BUTTON ============= -->
+<div class="d-flex justify-content-end align-items-center mt-2">
+  <span class="me-3 small text-muted">
+    Last updated: <span id="last-updated">{{ last_updated }} (UTC+8)</span>
+  </span>
+  <button id="manual-refresh" class="btn btn-sm btn-outline-secondary">Refresh</button>
+</div>
+
+</div><!-- container-fluid -->
+
+<!-- ============= DELETE CONFIRM MODAL ============= -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Deletion</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this submission? <br>
+        <b>This action cannot be undone!</b>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCRIPTS ============== -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ========== GLOBAL HELPER ========== */
+function recalcTotal() {
+  const boat = $('#editBoat').val();
+  const count = parseInt($('#editCount').val()) || 1;
+  const freeCount = (boat === "yes") ? 6 : 0;
+  const chargeable = Math.max(0, count - freeCount);
+  $('#editTotal').val(chargeable * 38);
+}
+
+$(function(){
+
+  /* ========== 1. AUTO-EXPAND DETAILS PANEL AFTER EDIT ========== */
+  const expandId = sessionStorage.getItem('expandDetailsAfterEdit');
+  if (expandId) {
+    setTimeout(() => {
+      const collapse = document.getElementById('ent' + expandId);
+      if (collapse) {
+        bootstrap.Collapse.getOrCreateInstance(collapse).show();
+        collapse.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      sessionStorage.removeItem('expandDetailsAfterEdit');
+    }, 500);
+  }
+
+  /* ========== 2. DATATABLE INIT ========== */
+  const table = $('#adminTable').DataTable({
+    paging: false,
+    info: false,
+    ordering: false,
+    searching: false
+  });
+
+  // Column toggler
+  $('.toggle-col').on('change', function(){
+    const idx = $(this).data('col');
+    $(`#adminTable th:nth-child(${idx}), #adminTable td:nth-child(${idx})`).toggle(this.checked);
+  });
+
+  // Global search
+  $('#globalSearch').on('keyup', () => table.search($('#globalSearch').val()).draw());
+
+  // ========== 3. FILTER OPTIONS ========== //
+  const filterOptions = {
+    "option": [
+      { value: "", label: "Select" },
+      { value: "祖先", label: "祖先 / Ancestor" },
+      { value: "冤亲债主", label: "冤亲债主 / Spiritual debtors" },
+      { value: "无主孤魂", label: "无主孤魂 / Wandering spirits" },
+      { value: "婴灵", label: "婴灵 / Baby" },
+      { value: "狗狗", label: "狗狗 / Dogs" }
+    ],
+    "paid": [
+      { value: "", label: "Select" },
+      { value: "paid", label: "Paid" },
+      { value: "unpaid", label: "Unpaid" }
+    ],
+    "gender": [
+      { value: "", label: "Select" },
+      { value: "male", label: "男 / Male" },
+      { value: "female", label: "女 / Female" }
+    ]
+  };
+
+  function updateFilterValueInput(type, currentVal) {
+    const container = document.getElementById('filterValueContainer');
+    if (filterOptions[type]) {
+      let selectHtml = '<select id="filterValue" class="form-select form-select-sm">';
+      filterOptions[type].forEach(opt => {
+        selectHtml += `<option value="${opt.value}" ${opt.value === currentVal ? 'selected' : ''}>${opt.label}</option>`;
+      });
+      selectHtml += '</select>';
+      container.innerHTML = selectHtml;
+    } else {
+      container.innerHTML = `<input id="filterValue" type="text" class="form-control form-control-sm" placeholder="Value" value="${currentVal || ''}"/>`;
+    }
+  }
+
+  const filterTypeSelect = $('#filterType');
+  updateFilterValueInput(filterTypeSelect.val(), '{{ filter_value }}');
+  filterTypeSelect.on('change', function() {
+    updateFilterValueInput(this.value, '');
+  });
+
+  $('#applyFilter').on('click', function(e) {
+    e.preventDefault();
+    const q = new URLSearchParams(window.location.search);
+    q.set('filter_type', $('#filterType').val());
+    const valEl = document.getElementById('filterValue');
+    if (valEl) {
+      q.set('filter_value', valEl.value.trim());
+    }
+    window.location.search = q.toString();
+  });
+
+  // Clear filter
+  document.getElementById('clearFilter').addEventListener('click', function() {
+    document.getElementById('filterType').value = "";
+    document.getElementById('globalSearch').value = "";
+    const container = document.getElementById('filterValueContainer');
+    container.innerHTML = `<input id="filterValue" type="text" class="form-control form-control-sm" placeholder="Value" value=""/>`;
+    window.location.href = window.location.pathname;
+  });
+
+
+  // ========== 4. REFRESH DASHBOARD ========== //
+  function refreshDashboard(){
+    $.get('/admin/refresh', resp => {
+      if(resp.orders) window.location.reload();
+    });
+  }
+  $('#refreshDashboard,#manual-refresh').on('click', refreshDashboard);
+
+  // ========== 5. PAID/UNPAID TOGGLE ========== //
+  $('.toggle-paid').off('click').on('click', function() {
+    const btn = $(this);
+    const id = btn.data('id');
+    const row = btn.closest('tr');
+    const total = parseInt(row.find('.editTotal').val() || row.find('.editTotal').text() || 0);
+
+    // If currently unpaid: ask for amount, then set to paid
+    if (btn.hasClass('btn-outline-danger')) {
+      let amt = null;
+      while (amt === null || amt === "" || isNaN(amt) || parseInt(amt) < 0) {
+        amt = prompt("请输入已付金额 / Please enter amount paid (RM):", total);
+        if (amt === null) return;
+        if (amt === "" || isNaN(amt) || parseInt(amt) < 0) alert("请输入正确的金额 / Please enter a valid amount.");
+      }
+      amt = parseInt(amt) || 0;
+      $.post(`/admin/paid/${id}`, { payment_amount: amt }, function(resp) {
+        if (resp.ok) {
+          btn.text('Paid')
+            .removeClass('btn-outline-danger')
+            .addClass('btn-outline-success');
+          row.find('.amount-paid').val(amt).attr('readonly', false);
+          $(".card-yellow:contains('Total Paid') h3").text('RM ' + resp.total_paid);
+        }
+      });
+    }
+    // If currently paid: revert to unpaid, amount to 0
+    else if (btn.hasClass('btn-outline-success')) {
+      $.post(`/admin/paid/${id}`, { payment_amount: 0 }, function(resp) {
+        if (resp.ok) {
+          btn.text('Unpaid')
+            .removeClass('btn-outline-success')
+            .addClass('btn-outline-danger');
+          row.find('.amount-paid').val(0).attr('readonly', false);
+          $(".card-yellow:contains('Total Paid') h3").text('RM ' + resp.total_paid);
+        }
+      });
+    }
+  });
+
+  // Always allow inline update of amount-paid
+  $('.amount-paid').on('change', function(){
+    const id = $(this).data('id');
+    const val = $(this).val();
+    $.post(`/admin/edit/${id}`, { payment_amount: val });
+  });
+
+  // Inline update amount paid & remarks
+  $('.amount-paid, .remarks').on('change', function(){
+    const id = $(this).data('id'), data = {};
+    data[$(this).hasClass('amount-paid') ? 'payment_amount' : 'remarks'] = $(this).val();
+    $.post(`/admin/edit/${id}`, data);
+  });
+
+  // WhatsApp remind button with confirmation popup
+  $(document).on('click', '.remind-btn', function(){
+    const id = $(this).data('id');
+    if (confirm("Are you sure you want to send a WhatsApp payment reminder?")) {
+      $.post(`/admin/send_reminder/${id}`, {}, function(r){
+        if(r.ok && r.whatsapp_link){
+          window.open(r.whatsapp_link, '_blank');
+        } else {
+          alert(r.msg || 'Already paid or error occurred.');
+        }
+      });
+    }
+  });
+
+  // Collapse toggle for details button
+  $(document).on('click', 'button[data-bs-toggle="collapse"]', function(e){
+    e.preventDefault();
+    const sel = this.getAttribute('data-bs-target');
+    const panel = document.querySelector(sel);
+    if(panel){
+      bootstrap.Collapse.getOrCreateInstance(panel).toggle();
+    }
+  });
+
+  /* ========== 6. EDIT BUTTON ========== */
+  $(document).on('click', '.edit-btn', function(){
+    const id = $(this).data('id');
+    $.get(`/admin/edit/${id}`, function(resp){
+      // fill in modal code (kept as you had)
+      $('#editSubId').val(id);
+      $('#editBoat').val(resp.boat || "no");
+      $('#editGender').val(resp.gender || "");
+      $('#editNameCn').val(resp.name_cn || "");
+      $('#editNameEn').val(resp.name_en || "");
+      $('#editPhone').val(resp.phone || "");
+      $('#editPaymentMethod').val(resp.payment_method || "");
+      $('#editCount').val(resp.count || 1);
+      $('#editTotal').val(resp.total || 0);
+      $('#editPaymentAmount').val(resp.payment_amount || 0);
+      $('#editRemarks').val(resp.remarks || "");
+
+      const container = $('#editEntriesContainer').empty();
+
+      // Dropdown option values (must exactly match stored values)
+      const optionOptionsHtml = `
+        <option value="祖先">祖先 / Ancestor</option>
+        <option value="冤亲债主">冤亲债主 / Debtors</option>
+        <option value="无主孤魂">无主孤魂 / Spirits</option>
+        <option value="婴灵">婴灵 / Baby</option>
+        <option value="狗狗">狗狗 / Dogs</option>
+      `;
+
+      const genderOptionsHtml = `
+        <option value="">Select</option>
+        <option value="male">男 / Male</option>
+        <option value="female">女 / Female</option>
+      `;
+
+      const calendarOptionsHtml = `
+        <option value="">Not sure</option>
+        <option value="english">English / 阳历</option>
+        <option value="lunar">Lunar / 农历</option>
+      `;
+
+      resp.entries.forEach((e,i) => {
+        const idx = i + 1;
+        const entryHtml = `
+          <div class="col-12 border p-3 rounded mb-3">
+            <strong>Entry ${idx}</strong>
+            <div class="row g-2 mt-2">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Option</label>
+                <select name="d${idx}_option" class="form-select form-select-sm">${optionOptionsHtml}</select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Name</label>
+                <input name="d${idx}_name_cn" class="form-control form-control-sm" />
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Gender</label>
+                <select name="d${idx}_gender" class="form-select form-select-sm">${genderOptionsHtml}</select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Calendar</label>
+                <select name="d${idx}_calendar" class="form-select form-select-sm">${calendarOptionsHtml}</select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">Year</label>
+                <input name="d${idx}_year" class="form-control form-control-sm" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">Month</label>
+                <input name="d${idx}_month" class="form-control form-control-sm" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">Day</label>
+                <input name="d${idx}_day" class="form-control form-control-sm" />
+              </div>
+            </div>
+          </div>
+        `;
+
+        const $e = $(entryHtml);
+
+        // Set dropdown and input values carefully
+        $e.find(`[name="d${idx}_option"]`).val(e.option || "");
+        $e.find(`[name="d${idx}_name_cn"]`).val(e.name_cn || "");
+        $e.find(`[name="d${idx}_gender"]`).val(e.gender || "");
+        let calVal = (e.calendar || "");
+        $e.find(`[name="d${idx}_calendar"]`).val(calVal);
+        $e.find(`[name="d${idx}_year"]`).val(e.year || "");
+        $e.find(`[name="d${idx}_month"]`).val(e.month || "");
+        $e.find(`[name="d${idx}_day"]`).val(e.day || "");
+
+        container.append($e);
+      });
+
+      // Show the modal
+      new bootstrap.Modal(document.getElementById('editModal')).show();
+
+      // Setup listeners for recalc
+      $('#editBoat, #editCount').off('change').on('change', recalcTotal);
+
+      // Initial calculation
+      recalcTotal();
+    });
+  });
+
+  /* ========== 7. SAVE EDIT BUTTON (WITH UNDO HOOK) ========== */
+  $('#saveEditBtn').off('click').on('click', function(){
+    let ok = true, errors = [];
+    $('#editForm [name]').removeClass('is-invalid');
+    recalcTotal();
+    $('#editForm .border.p-3').each(function(i){
+      const $entry = $(this);
+      const option = $entry.find('select[name$="_option"]').val().trim();
+      const name = $entry.find('input[name$="_name_cn"]').val().trim();
+      const gender = $entry.find('select[name$="_gender"]').val().trim();
+      const calendar = $entry.find('select[name$="_calendar"]').val().trim();
+      let year = $entry.find('input[name$="_year"]').val().trim();
+      let month = $entry.find('input[name$="_month"]').val().trim();
+      let day = $entry.find('input[name$="_day"]').val().trim();
+      if (!option) { $entry.find('select[name$="_option"]').addClass('is-invalid'); ok = false; errors.push(`Entry ${i+1}: Option cannot be empty.`); }
+      if (!name)   { $entry.find('input[name$="_name_cn"]').addClass('is-invalid'); ok = false; errors.push(`Entry ${i+1}: Name cannot be empty.`); }
+      if (!gender) { $entry.find('select[name$="_gender"]').addClass('is-invalid'); ok = false; errors.push(`Entry ${i+1}: Gender cannot be empty.`); }
+      if (calendar === "") {
+        if (year || month || day) {
+          $entry.find('input[name$="_year"]').val('');
+          $entry.find('input[name$="_month"]').val('');
+          $entry.find('input[name$="_day"]').val('');
+          ok = false;
+          errors.push(`Entry ${i+1}: If 'Not sure', leave year/month/day empty.`);
+        }
+      } else {
+        if (!year && !month && !day) {
+          $entry.find('input[name$="_year"]').addClass('is-invalid');
+          $entry.find('input[name$="_month"]').addClass('is-invalid');
+          $entry.find('input[name$="_day"]').addClass('is-invalid');
+          ok = false;
+          errors.push(`Entry ${i+1}: Fill at least year, month, or day.`);
+        }
+      }
+    });
+    if (!ok) { alert(errors.join('\n')); return; }
+    const id = $('#editSubId').val();
+    const data = $('#editForm').serialize();
+    $.post(`/admin/edit/${id}`, data, resp => {
+      if (resp.ok) {
+        sessionStorage.setItem('expandDetailsAfterEdit', id);
+        showUndoEdit('Edited record. You can undo.');
+        location.reload();
+      } else {
+        alert('Failed to save changes.');
+      }
+    });
+  });
+
+  /* ========== 8. DELETE FUNCTIONALITY (WITH UNDO HOOK) ========== */
+  let deleteId = null;
+  const isOwner = {{ is_owner|tojson }};
+  $(document).on('click', '.delete-btn', function() {
+    const subId = $(this).data('id');
+    if (isOwner) {
+      deleteId = subId;
+      new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+    } else {
+      if (confirm("You need owner approval to delete this submission. Send approval request?")) {
+        $.post(`/admin/request_delete_approval/${subId}`, {}, function(resp){
+          if (resp.ok && resp.whatsapp_link) {
+            window.open(resp.whatsapp_link, "_blank");
+            alert("Approval request sent to owner via WhatsApp.");
+          } else {
+            alert(resp.error || "Failed to request approval.");
+          }
+        });
+      }
+    }
+  });
+  $('#confirmDeleteBtn').off('click').on('click', function() {
+    if (!deleteId) return;
+    $.post(`/admin/delete/${deleteId}`, {}, function(resp){
+      if (resp.ok) {
+        showUndoDelete('Deleted record. You can undo.');
+        location.reload();
+      } else {
+        alert(resp.error || 'Failed to delete. Please try again.');
+      }
+    });
+  });
+
+  // Alternative delete-approval for ADMINs (kept unchanged)
+  $(document).on('click', '.request-delete-btn', function() {
+    const subId = $(this).data('id');
+    const orderId = $(this).data('order');
+    const name    = $(this).data('name');
+    $.get('/admin/owner_whatsapp', function(resp){
+      if (resp.ok && resp.phone) {
+        const url = `https://wa.me/${resp.phone}?text=${encodeURIComponent(
+          `Request to DELETE Order ${orderId} - ${name} (ID:${subId}). Please approve in dashboard.`
+        )}`;
+        window.open(url, "_blank");
+      } else {
+        alert('Cannot find owner WhatsApp number.');
+      }
+    });
+  });
+
+
+  /* ========== 9. UNDO BUTTON LOGIC ========== */
+  function showUndoDelete(msg) {
+    $('#undoDeleteBtn').show(); $('#undoEditBtn').hide(); $('#undoMsg').hide();
+    if(msg) { $('#undoMsg').text(msg).css('color','#198754').show(); }
+    sessionStorage.setItem('undoType', 'delete');
+  }
+  function showUndoEdit(msg) {
+    $('#undoEditBtn').show(); $('#undoDeleteBtn').hide(); $('#undoMsg').hide();
+    if(msg) { $('#undoMsg').text(msg).css('color','#ffc107').show(); }
+    sessionStorage.setItem('undoType', 'edit');
+  }
+
+  // Show the right undo on reload
+  var undoType = sessionStorage.getItem('undoType');
+  if (undoType === 'delete') showUndoDelete('Deleted record. You can undo.');
+  if (undoType === 'edit')   showUndoEdit('Edited record. You can undo.');
+
+  $('#undoDeleteBtn').on('click', function() {
+    $.post('/admin/undo', {}, function(resp) {
+      if (resp.ok) {
+        $('#undoDeleteBtn').hide();
+        $('#undoMsg').text('Deleted record restored!').css('color','#198754').show();
+        sessionStorage.removeItem('undoType');
+        setTimeout(function(){ $('#undoMsg').fadeOut(); }, 2000);
+        location.reload();
+      } else {
+        alert(resp.error || "Nothing to undo.");
+      }
+    });
+  });
+  $('#undoEditBtn').on('click', function() {
+    $.post('/admin/undo_edit', {}, function(resp) {
+      if (resp.ok) {
+        $('#undoEditBtn').hide();
+        $('#undoMsg').text('Edit undone!').css('color','#ffc107').show();
+        sessionStorage.removeItem('undoType');
+        setTimeout(function(){ $('#undoMsg').fadeOut(); }, 2000);
+        location.reload();
+      } else {
+        alert(resp.error || "Nothing to undo.");
+      }
+    });
+  });
+
+  /* ========== 10. ZOOM CONTROL ========== */
+  $('#zoomTable').on('change', function() {
+    const scale = parseFloat($(this).val()) || 1;
+    $('#adminTable').css('font-size', (scale*1.0)+'em');
+    $('#adminTable tr').css('height', (1.8*scale)+'em');
+  });
+
+  /* ========== 11. PER PAGE CONTROL ========== */
+  $('#perPageSelect').on('change', function(){
+    const perPage = $(this).val();
+    const q = new URLSearchParams(window.location.search);
+    q.set('per_page', perPage);
+    q.set('page', 1);
+    window.location.search = q.toString();
+  });
+
+  /* ========== 12. PAUSE/RESUME BUTTON ========== */
+  $('#pauseResumeBtn').on('click', function() {
+    const actionText = $(this).text().trim();
+    if (typeof isOwner !== 'undefined' && isOwner) {
+      if (confirm(`Are you sure you want to ${actionText.toLowerCase()}?`)) {
+        $.post('/admin/pause', {}, function(resp) {
+          window.location.reload();
+        });
+      }
+    } else {
+      if (confirm(`Are you sure you want to ${actionText.toLowerCase()}? Approval request will be sent to owner.`)) {
+        $.post('/admin/pause/request_approval', {}, function(resp) {
+          if (resp.ok) {
+            alert('Approval request sent to owner via WhatsApp.');
+            if (resp.whatsapp_link) {
+              window.open(resp.whatsapp_link, '_blank');
+            }
+          } else {
+            alert('Failed: ' + (resp.error || 'Unknown error'));
+          }
+        });
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

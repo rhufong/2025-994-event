@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <title>已提交记录 Already Submitted</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f6f6f6; }
+    .card { border-radius:18px; box-shadow:0 2px 16px #d1ba7340; }
+    .card-body { padding: 2em 1em 2em 1em; text-align: center; }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6em;
+      margin-bottom: 0.13em;
+      margin-top: 0.2em;
+    }
+    .big-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.12;
+      gap: 0.05em;
+    }
+    .title-ch {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #b0911d;
+      letter-spacing: 0.7px;
+      margin-bottom: 0.06em;
+    }
+    .title-en {
+      font-size: 1.26rem;
+      font-weight: 800;
+      color: #b0911d;
+      margin-top: 0em;
+    }
+    .warning-icon {
+      font-size: 2.1rem;
+      color: #ffe066;
+      text-shadow: 0 1px 5px #ffe06699;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.08em;
+    }
+    .info-ch {
+      font-size: 1.12rem;
+      color: #111;
+      font-weight: 600;
+      margin-bottom: 0.03em;
+      text-align: center;
+      margin-top: 0.24em;
+    }
+    .info-en {
+      font-size: 1.00rem;
+      color: #222;
+      font-weight: 400;
+      margin-bottom: 0.12em;
+      margin-top: 0.01em;
+      text-align: center;
+    }
+    .existing-box {
+      background: rgba(255, 240, 140, 0.18);
+      border: 1.2px solid #ffe066;
+      border-radius: 11px;
+      padding: 0.5em 1.6em 0.3em 1.6em;
+      margin: 0.75em auto 1.07em auto;
+      min-width: 0;
+      width: fit-content;
+      max-width: 96vw;
+      text-align: left;
+      box-shadow: 0 1.5px 8px #ffe0661a;
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.18em;
+    }
+    .existing-table {
+      width: auto;
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 0 0.09em;
+    }
+    .existing-label {
+      font-weight: 700;
+      color: #8b791a;
+      font-size: 1em;
+      min-width: 9em;
+      text-align: right;
+      padding-right: 0.7em;
+      letter-spacing: 0.2px;
+      vertical-align: middle;
+    }
+    .existing-value {
+      font-weight: 700;
+      color: #111;
+      font-size: 1.06em;
+      letter-spacing: 0.1px;
+      vertical-align: middle;
+      text-align: left;
+      padding-left: 0.1em;
+    }
+    .overwrite-warning {
+      color: #cb1e1e;
+      font-size: 1.03rem;
+      font-weight: 600;
+      margin-bottom: 0.06em;
+      margin-top: 0.06em;
+      text-align: center;
+    }
+    .overwrite-note {
+      font-size: 0.91rem;
+      color: #b20a0a;
+      margin-bottom: 2.05em;
+      text-align: center;
+    }
+    .btn { min-width:115px; }
+    form { text-align: center; }
+    @media (max-width:600px) {
+      .card-body { padding: 1.1em 0.2em; }
+      .existing-box { max-width: 99vw; padding: 0.5em 0.5em 0.3em 0.5em; }
+      .existing-label { min-width: 0; font-size: 0.98em; }
+      .existing-value { font-size: 0.98em; }
+      .title-ch, .title-en { font-size: 1.08em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="card mx-auto" style="max-width:500px;">
+      <div class="card-body">
+
+        <div class="header-row">
+          <span class="warning-icon">⚠️</span>
+          <span class="big-title">
+            <span class="title-ch">已提交记录</span>
+            <span class="title-en">Already Submitted</span>
+          </span>
+        </div>
+        <div class="info-ch">您已登记过该华文名和电话</div>
+        <div class="info-en">You have already registered this Chinese name & phone number.</div>
+
+        <div class="existing-box mx-auto">
+          <table class="existing-table">
+            <tr>
+              <td class="existing-label">华文名 / Chinese Name:</td>
+              <td class="existing-value">{{dup.name_cn}}</td>
+            </tr>
+            <tr>
+              <td class="existing-label">电话号码 / Phone Number:</td>
+              <td class="existing-value">{{dup.phone}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="overwrite-warning">
+          如果继续，您的资料将会覆盖原有记录。
+        </div>
+        <div class="overwrite-note">
+          If you continue, your new submission will <b>overwrite</b> the previous one.
+        </div>
+
+        <form method="POST" action="{{url_for('register')}}">
+          {% for k,v in form_data.items() %}
+            <input type="hidden" name="{{k}}" value="{{v}}">
+          {% endfor %}
+          <input type="hidden" name="confirm" value="yes">
+          <input type="hidden" name="dup_key" value="{{dup_key}}">
+          <button class="btn btn-danger me-3" type="submit">
+            是，覆盖记录<br>Yes, Overwrite
+          </button>
+          <a href="{{url_for('register')}}" class="btn btn-secondary">
+            取消<br>Cancel
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Prevent accidental submit with Enter (enforce button click)
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      form.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          return false;
+        }
+      });
+      form.addEventListener('submit', function(e) {
+        if (!e.submitter || e.submitter.type !== "submit") {
+          e.preventDefault();
+          return false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

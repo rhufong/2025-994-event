@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <title>[2025]👻中元节超渡登记表 / Ghost Festival Spirits Registration</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f9fafc; }
+    .check-box-top {
+      max-width: 670px; margin: 2.2rem auto 1rem auto; padding: 1.1rem 0.7rem; border-radius: 15px;
+      background: #fffce6; border: 2px solid #ffe066; font-size: 1.11rem; font-weight:600;
+      color: #987b12; box-shadow: 0 2px 12px #ffe06633; cursor: pointer; display:flex; align-items:center; justify-content:center; gap:0.7em;
+      transition: box-shadow .17s;
+    }
+    .check-box-top:hover { box-shadow: 0 4px 24px #ffe06660; color: #bc960a; }
+    .header-box { background: #fffbe8; border-radius: 18px; margin: 1.5rem auto 1.5rem auto; max-width: 670px;
+      box-shadow: 0 2px 14px #ffe06640; padding: 2.1rem 0 1.2rem 0; text-align: center; }
+    .header-title { font-size:2.1rem; color:#987b12; font-weight: 700; text-shadow:0 1px 0 #fffde8, 0 2px 4px #ffe06638;}
+    .desc-box { background: #fff; border-radius: 16px; max-width: 670px; margin: 0 auto 2.1rem auto;
+      padding: 1.5rem 2rem 1.4rem 2rem; font-size: 0.97rem; /* smaller font */ box-shadow: 0 1px 8px #dedede20; border: none; text-align: left;}
+    .desc-line { margin-bottom: 1.0rem; line-height: 1.65; color: #34380e; font-size: 0.97rem; }
+    .form-container { background: #fff; max-width: 670px; margin: 0 auto 2.5rem auto; border-radius: 14px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.12); padding: 2.1rem 2.2rem 2rem 2.2rem;}
+    .section-title { font-size: 1.22rem; color: #987b12; font-weight: 600; margin-bottom:1.5rem; margin-top:1.7rem;
+      border-left: 5px solid #ffe066; padding-left: 1rem; letter-spacing:0.5px;}
+    .amount-box { background: #eaf7ff; color: #136ba8; border-left: 5px solid #b3e2fa; font-weight: 600;
+      border-radius: 7px; padding: 0.5rem 1.05rem; margin: 0.12rem 0 0.6rem 0; display: inline-block; font-size: 1.05rem;}
+    .entry-box { background: #fff; border-radius: 14px; border: 1.5px solid #e7e7e7; box-shadow: 0 2px 12px #c8c8c816;
+      padding: 1.5rem 1.4rem 1.3rem 1.4rem; margin-bottom: 2.1rem; margin-top: 1rem; max-width: 620px; margin-left: auto; margin-right: auto;}
+    .entry-title { font-size: 1.13rem; font-weight: 700; color: #B49611; margin-bottom: 1rem;}
+    .mb-q {margin-bottom:1.14rem !important;}
+    .form-label {font-weight: 600;}
+    .qmark-help { display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; background: #e0f0fc; color: #1976d2; font-size: 0.92rem;
+      cursor: pointer; margin-left: 6px; border: 1px solid #bbdefb; vertical-align: middle; font-weight: normal; user-select: none;}
+    .error-message {color:#d82323; font-size: 1.01rem; margin-top:0.3rem; min-height:1.15em;}
+    select.form-select { box-shadow: none !important; border: 1px solid #ced4da !important;}
+    .submit-btn-row {display:flex;justify-content:center;margin-top:2.0rem;}
+    #submitBtn {transition: opacity .3s;}
+    #submitBtn[hidden] {opacity:0;pointer-events:none;}
+    @media (max-width: 768px) {
+      .header-box, .desc-box, .form-container, .check-box-top { max-width: 99vw; padding-left: 4vw; padding-right: 4vw; }
+      .form-container { padding: 1.5rem 2vw 1.3rem 2vw; }
+      .entry-box {padding: 1rem 2vw 1rem 2vw;}
+    }
+  </style>
+</head>
+
+<!-- Boat List Modal -->
+<div class="modal fade" id="boatModal" tabindex="-1" aria-labelledby="boatModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="boatModalLabel">已登记船只名单 / Boat Registrants</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img src="{{ url_for('static', filename='boats-list.png') }}" alt="Boat Registrants" style="width:100%;max-width:700px;border-radius:8px;box-shadow:0 2px 8px #ccc;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<body>
+  <!-- CHECK PAYMENT STATUS BOX -->
+  <div class="check-box-top" onclick="window.location='/check'">
+    🔎 <span>Check Payment Status / 查询付款状态</span>
+  </div>
+  <div class="header-box">
+    <div class="header-title">[2025]👻中元节超渡登记表 / Ghost Festival Spirits Registration</div>
+  </div>
+  <div class="desc-box">
+    <div class="desc-line">📌 <span style="color:#111;">请每次报名只提交一个名字。</span> Please submit one name per registration.</div>
+    <div class="desc-line">📣 <span style="color:#111;">我们目前正在收集有意愿报名超度往生者的善男信女。</span> We are currently collecting names from those interested in praying for the spirits.</div>
+    <div class="desc-line">💰 <span style="color:#111;">每个名字 = RM38 / Each name = RM38</span></div>
+    <div class="desc-line">⛵ <span style="color:#111;">已报名中元节法船的人可免费报名最多6个名字。超过6个名字，每个额外的名字收费为RM38。</span> Boat owners are entitled to free registration for up to 6 names. For more than 6 names, each additional name costs RM38.</div>
+    <div class="desc-line">🚨 <span style="color:#111;">请准确填写表格。如有不完整或错误信息，可能导致注册失败。</span> Please fill out the form accurately. Incomplete or incorrect information may result in rejection of your registration.</div>
+    <div class="desc-line">🟡 <span style="color:#111;">先到先得。报名表仅供参考，请理解。</span> First-come, first-served basis. Registration list for reference purposes only.</div>
+    <div style="margin-top:1rem; color:#8b7900;">感谢您的理解与参与！Thank you for your understanding and participation!</div>
+  </div>
+  <div class="form-container">
+    <form id="regForm" method="POST" autocomplete="off" novalidate>
+      <div class="section-title">登记人资料 / Registrant Details</div>
+      <div class="mb-3 mb-q">
+
+      <!-- 1st question customisation -->
+      <label class="form-label" for="boat">
+        2025年您是否有报名法船超渡 ? / Did you sign up for the boat booking?
+        <button type="button" class="btn btn-link btn-sm p-0 align-baseline ms-1"
+          data-bs-toggle="modal" data-bs-target="#boatModal"
+          style="font-size:1.18em;vertical-align:baseline;line-height:1;">
+          <span class="text-primary fw-bold" style="font-size:1.3em;">🚤</span>
+          <span class="visually-hidden">查看已登记船只名单 / View Boat List</span>
+        </button>
+      </label>
+      <!-- The hint box (initially hidden) -->
+      <div id="boat-hint-box" style="display:none;">
+        <div style="
+          background: #f4f8fc;
+          border: 1.5px solid #e0eaf5;
+          border-radius: 9px;
+          margin-top: 8px;
+          padding: 10px 16px;
+          color: #212529;
+          font-size: 0.98em;
+          font-weight: 500;
+          box-shadow: 0 2px 8px #d7e5f740;
+          ">
+          按<span style="color:#0d6efd;font-weight:700;">船只</span>图标查看【2025】中元节法船超渡报名名单 <br>
+          Press the <b style="color:#0d6efd;font-weight:700;">BOAT</b> icon to view [2025] Boat Booking Name List
+        </div>
+      </div>
+
+
+
+        <select class="form-select" id="boat" name="boat" required>
+          <option value="">Select</option>
+          <option value="yes">是 / Yes</option>
+          <option value="no">否 / No</option>
+        </select>
+        <div class="error-message" id="err-boat"></div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="your_gender">性别/Gender</label>
+        <select class="form-select" id="your_gender" name="your_gender" required>
+          <option value="">Select</option>
+          <option value="male">男 / Male</option>
+          <option value="female">女 / Female</option>
+        </select>
+        <div class="error-message" id="err-gender"></div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="name_cn">华文名/Chinese Name
+          <span class="qmark-help" data-bs-toggle="tooltip" title="Eg: 许美月">?</span>
+        </label>
+        <input class="form-control" type="text" name="name_cn" id="name_cn" required maxlength="12" autocomplete="off">
+        <div class="error-message" id="err-name-cn"></div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="name_en">英文名 /English Full Name
+          <span class="qmark-help" data-bs-toggle="tooltip" title="Eg: Koh Bee Guat">?</span>
+        </label>
+        <input class="form-control" type="text" name="name_en" id="name_en" required maxlength="30" autocomplete="off">
+        <div class="error-message" id="err-name-en"></div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="phone">电话联系/Telephone No
+          <span class="qmark-help" data-bs-toggle="tooltip" title="Eg: +60-192151339">?</span>
+        </label>
+        <div class="row g-0">
+          <div class="col-4 col-md-3">
+            <select class="form-select" name="country_code" id="country_code" required>
+              <option value="">Select</option>
+              <option value="+60">+60 (Malaysia)</option>
+              <option value="+65">+65 (Singapore)</option>
+            </select>
+          </div>
+          <div class="col-8 col-md-9">
+            <input class="form-control" type="text" name="phone" id="phone" maxlength="12" placeholder="e.g. 123456789" required inputmode="numeric" autocomplete="off">
+            <div class="error-message" id="err-phone"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="count">
+          您要报名多少个名字?/How many do you want to register?
+          <span class="qmark-help" data-bs-toggle="tooltip" title="本次登记所有祖先/婴灵/宠物等的总人数，请如实填写，一次只能登记一次。Total number of all names you wish to register in this submission.">?</span>
+        </label>
+        <select class="form-select" id="count" name="count" required onchange="renderEntries();checkAmountBox();">
+          <option value="">Select</option>
+          {% for i in range(1,11) %}
+            <option value="{{i}}">{{i}}</option>
+          {% endfor %}
+        </select>
+        <div class="error-message" id="err-count"></div>
+        <div class="amount-box mb-q" id="payment-output" style="display:none;">Amount to pay: RM 0</div>
+      </div>
+      <div class="mb-3 mb-q">
+        <label class="form-label" for="payment_method">付款方式 / Payment Method</label>
+        <select class="form-select" name="payment_method" id="payment_method" required>
+          <option value="">Select</option>
+          <option value="tng">TnG</option>
+          <option value="bank_transfer">Bank Transfer</option>
+        </select>
+        <div class="error-message" id="err-method"></div>
+      </div>
+      <div class="section-title">往生者/宠物资料 Registration Entries</div>
+      <div id="entriesContainer"></div>
+      <div class="error-message text-center mb-2" id="entriesError" style="display:none;"></div>
+      <div class="submit-btn-row">
+        <button type="submit" id="submitBtn" class="btn btn-success px-5 py-2" style="display:none;">提交登记 / Submit Registration</button>
+      </div>
+    </form>
+  </div>
+  <!-- Duplicate checking is handled by backend (Flask), not in this HTML/JS script. -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+
+    function clearErrorIfValid(id, valid) {
+      let el = document.getElementById(id);
+      if (el && valid) el.innerText = "";
+    }
+
+    document.getElementById('boat').addEventListener('change', function(){ checkAmountBox(); validateAll(); });
+    document.getElementById('count').addEventListener('change', function(){ renderEntries(); checkAmountBox(); validateAll(); });
+    document.getElementById('payment_method').addEventListener('change', validateAll);
+
+    function checkAmountBox() {
+      let count = parseInt(document.getElementById('count').value||'0');
+      let boat = document.getElementById('boat').value;
+      let box = document.getElementById('payment-output');
+      if(count && boat) {
+        box.style.display = 'inline-block';
+        let free = (boat === 'yes') ? 6 : 0;
+        let chargeable = Math.max(0, count - free);
+        let amount = chargeable * 38;
+        box.innerText = "Amount to pay: RM " + amount;
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    document.getElementById('phone').addEventListener('input', function(e){
+      let val = this.value;
+      let err = document.getElementById('err-phone');
+      if (/[^0-9]/.test(val)) {
+        this.value = val.replace(/[^0-9]/g, "");
+        val = this.value;
+      }
+      if (val.length < 8 || val.length > 12) {
+        if (val.length === 0) {
+          err.innerText = "";
+        } else {
+          err.innerText = "电话号码需为8-12位数字 / Phone must be 8-12 digits";
+        }
+      } else {
+        err.innerText = "";
+      }
+      validateAll();
+    });
+
+    function renderEntries() {
+      let count = parseInt(document.getElementById('count').value||'0');
+      let html = '';
+      let optionsList = [
+        { value:"祖先", label:"祖先 / Ancestor" },
+        { value:"冤亲债主", label:"冤亲债主 / Spiritual debtors" },
+        { value:"无主孤魂", label:"无主孤魂 / Wandering spirits" },
+        { value:"婴灵", label:"婴灵 / Baby" },
+        { value:"狗狗", label:"狗狗 / Dogs" }
+      ];
+      for(let i=1; i<=count; i++) {
+        html += `
+        <div class="entry-box" id="entry-box-${i}">
+          <div class="entry-title">报名名单 Entry ${i}</div>
+          <div class="mb-3 mb-q">
+            <label class="form-label">请您选择您的选项 / Please choose your option</label>
+            <select class="form-select" name="d${i}_option" id="d${i}_option">
+              <option value="">Select</option>
+              ${optionsList.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+            </select>
+            <div class="error-message" id="err-option-${i}"></div>
+          </div>
+          <div class="mb-3 mb-q">
+            <label class="form-label">华文名/Chinese Name</label>
+            <input class="form-control" type="text" name="d${i}_name_cn" id="d${i}_name_cn" maxlength="16" autocomplete="off"
+              onfocus="showNameHint(${i})" onblur="hideNameHint(${i})">
+            <div id="nameHint-${i}" style="display:none; color:#805d0b; font-size:0.97rem; margin-top:0.2rem;">
+              请输入中文名字以继续注册。对于冤亲债主和无主孤魂，请输入您自己的中文名字。对于宠物，如果没有中文名字，可以输入英文名字。<br>
+              Please key in the Chinese name to proceed with registration. For spiritual debtors and wandering spirits, key in your own Chinese name. For pets, you can key in the English name if no Chinese name is available.
+            </div>
+            <div class="error-message" id="err-name-cn-${i}"></div>
+          </div>
+          <div class="mb-3 mb-q">
+            <label class="form-label">性别 / Gender</label>
+            <select class="form-select" name="d${i}_gender" id="d${i}_gender">
+              <option value="">Select</option>
+              <option value="male">男 / Male</option>
+              <option value="female">女 / Female</option>
+            </select>
+            <div class="error-message" id="err-gender-${i}"></div>
+          </div>
+          <div class="mb-3 mb-q">
+            <label class="form-label">死亡日期 / Date of Death
+              <span class="qmark-help" data-bs-toggle="tooltip" title="请至少填写一个日期项。For 'Not sure', leave date fields blank.">?</span>
+            </label>
+            <div class="calendar-options mb-2">
+              <label><input type="radio" name="d${i}_calendar" id="d${i}_calendar_en" value="english" checked onchange="handleCalendarType(${i});validateAll();"> 英文 / Gregorian</label>
+              <label><input type="radio" name="d${i}_calendar" id="d${i}_calendar_lunar" value="lunar" onchange="handleCalendarType(${i});validateAll();"> 农历 / Lunar</label>
+              <label><input type="radio" name="d${i}_calendar" id="d${i}_calendar_unsure" value="not_sure" onchange="handleCalendarType(${i});validateAll();"> 不确定 / Not sure</label>
+            </div>
+            <div class="date-inputs" id="date-inputs-${i}">
+              <input class="form-control" style="display:inline-block; width:85px; margin-right:6px;" type="text" placeholder="Year" maxlength="4" name="d${i}_year" id="d${i}_year">
+              <input class="form-control" style="display:inline-block; width:85px; margin-right:6px;" type="text" placeholder="Month" maxlength="2" name="d${i}_month" id="d${i}_month">
+              <input class="form-control" style="display:inline-block; width:85px;" type="text" placeholder="Day" maxlength="2" name="d${i}_day" id="d${i}_day">
+              <div class="error-message" id="err-date-format-${i}"></div>
+            </div>
+            <div class="error-message" id="err-date-${i}"></div>
+          </div>
+        </div>
+        `;
+      }
+      document.getElementById('entriesContainer').innerHTML = html;
+      for(let i=1;i<=count;i++) handleCalendarType(i);
+      // Attach input listeners for live validation & error clearing
+      for(let i=1;i<=count;i++) {
+        document.getElementById(`d${i}_option`).addEventListener('change', validateAll);
+        document.getElementById(`d${i}_name_cn`).addEventListener('input', validateAll);
+        document.getElementById(`d${i}_gender`).addEventListener('change', validateAll);
+        document.getElementById(`d${i}_year`).addEventListener('input', validateAll);
+        document.getElementById(`d${i}_month`).addEventListener('input', validateAll);
+        document.getElementById(`d${i}_day`).addEventListener('input', validateAll);
+        document.getElementById(`d${i}_calendar_en`).addEventListener('change', validateAll);
+        document.getElementById(`d${i}_calendar_lunar`).addEventListener('change', validateAll);
+        document.getElementById(`d${i}_calendar_unsure`).addEventListener('change', validateAll);
+      }
+      validateAll();
+    }
+
+    function showNameHint(idx) { document.getElementById(`nameHint-${idx}`).style.display = "block"; }
+    function hideNameHint(idx) { document.getElementById(`nameHint-${idx}`).style.display = "none"; }
+
+    function handleCalendarType(idx) {
+      const notSure = document.getElementById(`d${idx}_calendar_unsure`).checked;
+      const year = document.getElementById(`d${idx}_year`);
+      const month = document.getElementById(`d${idx}_month`);
+      const day = document.getElementById(`d${idx}_day`);
+      if(notSure) {
+        year.value = ""; month.value = ""; day.value = "";
+        year.disabled = true; month.disabled = true; day.disabled = true;
+      } else {
+        year.disabled = false; month.disabled = false; day.disabled = false;
+      }
+    }
+
+    function validateAll() {
+      let valid = true;
+      ['err-boat','err-gender','err-name-cn','err-name-en','err-phone','err-count','err-method'].forEach(i=>{
+        document.getElementById(i).innerText="";
+      });
+      if (document.getElementById('boat').value == "") {
+        valid=false; document.getElementById('err-boat').innerText='请选择选项 / Please select an option';
+      } else {
+        clearErrorIfValid('err-boat', true);
+      }
+      if (document.getElementById('your_gender').value == "") {
+        valid=false; document.getElementById('err-gender').innerText='请选择性别 / Please select gender';
+      } else {
+        clearErrorIfValid('err-gender', true);
+      }
+      if (document.getElementById('name_cn').value.trim() == "") {
+        valid=false; document.getElementById('err-name-cn').innerText='请输入中文名 / Please enter the Chinese Name';
+      } else {
+        clearErrorIfValid('err-name-cn', true);
+      }
+      if (document.getElementById('name_en').value.trim() == "") {
+        valid=false; document.getElementById('err-name-en').innerText='请输入英文名 / Please enter the English Name';
+      } else {
+        clearErrorIfValid('err-name-en', true);
+      }
+      if (document.getElementById('country_code').value == "") {
+        valid=false; document.getElementById('err-phone').innerText='请选择区号 / Please select country code';
+      } else {
+        clearErrorIfValid('err-phone', true);
+      }
+      let phoneVal = document.getElementById('phone').value;
+      if (phoneVal.trim() == "") {
+        valid=false; document.getElementById('err-phone').innerText='请输入电话号码 / Please enter phone number';
+      }
+      else if (!/^[0-9]+$/.test(phoneVal) || phoneVal.length < 8 || phoneVal.length > 12) {
+        valid=false; document.getElementById('err-phone').innerText='电话号码需为8-12位数字 / Phone must be 8-12 digits';
+      } else {
+        clearErrorIfValid('err-phone', true);
+      }
+      if (document.getElementById('count').value == "") {
+        valid=false; document.getElementById('err-count').innerText='请选择数量 / Please select how many';
+      } else {
+        clearErrorIfValid('err-count', true);
+      }
+      if (document.getElementById('payment_method').value == "") {
+        valid=false; document.getElementById('err-method').innerText='请选择付款方式 / Please select payment method';
+      } else {
+        clearErrorIfValid('err-method', true);
+      }
+      let count = parseInt(document.getElementById('count').value||'0');
+      let entryValid = true;
+      for(let i=1;i<=count;i++) {
+        document.getElementById(`err-option-${i}`).innerText = "";
+        document.getElementById(`err-name-cn-${i}`).innerText = "";
+        document.getElementById(`err-gender-${i}`).innerText = "";
+        document.getElementById(`err-date-${i}`).innerText = "";
+        document.getElementById(`err-date-format-${i}`).innerText = "";
+        if(document.getElementById(`d${i}_option`).value=="") {
+          entryValid = false; document.getElementById(`err-option-${i}`).innerText="请选择选项 / Please select option";
+        } else {
+          clearErrorIfValid(`err-option-${i}`, true);
+        }
+        if(document.getElementById(`d${i}_name_cn`).value.trim()=="") {
+          entryValid = false; document.getElementById(`err-name-cn-${i}`).innerText="请输入名字 / Please enter name";
+        } else {
+          clearErrorIfValid(`err-name-cn-${i}`, true);
+        }
+        if(document.getElementById(`d${i}_gender`).value=="") {
+          entryValid = false; document.getElementById(`err-gender-${i}`).innerText="请选择性别 / Please select gender";
+        } else {
+          clearErrorIfValid(`err-gender-${i}`, true);
+        }
+        let cal_unsure = document.getElementById(`d${i}_calendar_unsure`).checked;
+        let year = document.getElementById(`d${i}_year`);
+        let month = document.getElementById(`d${i}_month`);
+        let day = document.getElementById(`d${i}_day`);
+        if(!cal_unsure) {
+          if(!year.value && !month.value && !day.value) {
+            entryValid = false; document.getElementById(`err-date-${i}`).innerText="请至少填写一个日期项 / Please fill at least one date field";
+          } else {
+            clearErrorIfValid(`err-date-${i}`, true);
+          }
+          if((year.value && !/^\d+$/.test(year.value)) ||
+             (month.value && !/^\d+$/.test(month.value)) ||
+             (day.value && !/^\d+$/.test(day.value))) {
+            entryValid = false; document.getElementById(`err-date-format-${i}`).innerText="请只输入数字 / Please only input numbers";
+          } else {
+            clearErrorIfValid(`err-date-format-${i}`, true);
+          }
+        }
+      }
+      let entriesError = document.getElementById('entriesError');
+      if(!entryValid) {
+        valid = false;
+        entriesError.style.display = "block";
+        entriesError.innerText = "请填写所有必填项 / Please fill in all required fields.";
+      } else {
+        entriesError.style.display = "none";
+      }
+      document.getElementById('submitBtn').style.display = (valid && entryValid) ? "inline-block" : "none";
+      return valid && entryValid;
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      renderEntries();
+      checkAmountBox();
+      validateAll();
+    });
+
+    document.getElementById('regForm').onsubmit = function(e){
+      if(!validateAll()){
+        let firstErr = document.querySelector('.error-message:not(:empty)');
+        if(firstErr && typeof firstErr.scrollIntoView==="function")
+          firstErr.scrollIntoView({behavior:"smooth", block:"center"});
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    const $boat = document.getElementById('boat');
+    const $hint = document.getElementById('boat-hint-box');
+    if ($boat && $hint) {
+      $boat.addEventListener('focus', () => { $hint.style.display = 'block'; });
+      $boat.addEventListener('change', () => { $hint.style.display = 'block'; });
+      $boat.addEventListener('blur', () => { setTimeout(() => { $hint.style.display = 'none'; }, 200); });
+    }
+
+  </script>
+</body>
+</html>

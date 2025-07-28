@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <title>👻 Admin History Logs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+</head>
+<body>
+<nav class="navbar navbar-light bg-white border-bottom py-2">
+  <div class="container-fluid">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary btn-sm">← Back to Dashboard</a>
+    <span class="h5 mb-0 text-secondary ms-3">👻 Admin History Logs</span>
+    <div class="ms-auto">
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+    <tr class="{{ 'table-warning' if log.user == 'owner' else '' }}">
+        <td>{{ log.ts.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ log.user }}</td>
+        <td>{{ log.action }}</td>
+        <td>{{ log.detail }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4" class="text-center">No logs found.</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

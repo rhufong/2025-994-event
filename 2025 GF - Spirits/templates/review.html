@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <title>付款状态 / Payment Status</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      background: #fff;
+    }
+    .main-box {
+      min-height: 100vh;
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.1rem 1.1rem 1.0rem 1.1rem;
+    }
+    .orderid-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 0.6em;
+      position: relative;
+    }
+    .bulb-icon {
+      background: #ffe066;
+      color: #c59a02;
+      border-radius: 50%;
+      font-size: 1.1em;
+      width: 1.35em;
+      height: 1.35em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.38em;
+      box-shadow: 0 2px 6px #ffe06645;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      outline: none;
+    }
+    .bulb-tooltip {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 135%;
+      z-index: 10;
+      background: #fffbe7;
+      color: #74630a;
+      font-size: 0.82em;
+      padding: 0.48em 1.15em;
+      border-radius: 13px;
+      border: 1.3px solid #ffe066;
+      box-shadow: 0 2px 14px #ffe06630;
+      min-width: 205px;
+      max-width: 360px;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.5;
+      font-weight: 400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .bulb-icon.active .bulb-tooltip,
+    .bulb-icon:focus .bulb-tooltip {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .orderid-label {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #987b12;
+      letter-spacing: 1px;
+      background: #fff9db;
+      border-radius: 12px;
+      padding: 0.1em 1.0em;
+      box-shadow: 0 2px 10px #ffe06621;
+      display: flex;
+      align-items: center;
+    }
+    .status-row {
+      font-size: 1.09rem;
+      font-weight: 700;
+      margin-bottom: 0.7em;
+      text-align: center;
+      width: 100%;
+    }
+    .status-pending { color: #e0281a; font-weight: 800;}
+    .status-paid    { color: #25982d; font-weight: 800;}
+    .status-foc     { color: #25982d; font-weight: 900; font-size: 1.23em; }
+    .amount-label {
+      color: #111;
+      font-weight: 700;
+      font-size: 1.04rem;
+      margin-bottom: 0.12em;
+      text-align: center;
+    }
+    .amount-val {
+      font-size: 2.45rem;
+      font-weight: 900;
+      color: #111;
+      margin: 0.10em 0 0.10em 0;
+      letter-spacing:1px;
+      text-align: center;
+    }
+    .scan-label {
+      color: #111;
+      font-size: 1.09rem;
+      font-weight: 400;
+      margin-bottom: 0.05em;
+      margin-top: 0.02em;
+      text-align: center;
+    }
+    .qr-img {
+      display: block;
+      margin: 0 auto 0.09em auto;
+      width: 99%;
+      max-width: 335px;
+      min-width: 140px;
+      height: auto;
+      aspect-ratio: 1/1.08;
+      object-fit: contain;
+      border-radius: 15px;
+      box-shadow: 0 2px 16px #ededed2a;
+      border: none;
+    }
+    .contact-footer {
+      width: 100%;
+      margin-top: 0.15em;
+      padding-bottom: 0.1em;
+      text-align: center;
+    }
+    .contact-label {
+      color: #998012;
+      font-size: 0.95em;
+      font-weight: 500;
+      margin-bottom: 0.02em;
+      text-align: center;
+      line-height:1.32;
+    }
+    .whatsapp-link {
+      color: #25d366;
+      background: none;
+      border-radius: 60px;
+      padding:0.09em 0.45em 0.09em 0.32em;
+      font-size: 1em;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      transition:background 0.18s;
+      margin-bottom:0.03em;
+      box-shadow: none;
+    }
+    .whatsapp-link:hover { background: #e7fef2; color: #1c9950;}
+
+    /* — back button styles — */
+    .back-bottom-row {
+      width:100%;
+      display:flex;
+      justify-content:center;
+      gap:0.7em;
+      margin-top:1.2em;
+    }
+    .btn-backregister {
+      font-weight:400;
+      border-radius:8px;
+      border:1.2px solid #d7c676;
+      padding:0.11em 1.1em;
+      background: none;
+      color:#98861a;
+      font-size:0.90em;
+      text-decoration:none;
+      transition:background 0.16s, color 0.15s, border-color 0.15s;
+      box-shadow: none;
+      display:inline-block;
+    }
+    .btn-backregister:hover {
+      color:#ad980d;
+      background:#fffbe7;
+      border-color: #ffe066;
+    }
+    @media (max-width: 600px) {
+      .main-box { max-width: 99vw; padding: 1.5rem 2vw 0.6rem 2vw;}
+      .qr-img { max-width: 92vw; }
+      .amount-val { font-size:2.08rem;}
+      .orderid-label { font-size: 0.97rem; }
+      .bulb-tooltip { min-width: 130px; font-size:0.93em; padding:0.28em 0.5em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="main-box">
+    <div class="orderid-row">
+      <span class="bulb-icon" id="bulb" tabindex="0">
+        <i class="bi bi-lightbulb-fill"></i>
+        <span class="bulb-tooltip">
+          订单号为您手机号码最后4位<br>
+          Order ID is the last 4 digits of your phone number
+        </span>
+      </span>
+      <span class="orderid-label">ORDER ID: {{ order.order_id }}</span>
+    </div>
+    <div class="status-row">
+      付款状态 / Payment Status:
+      {% if order.total == 0 %}
+        <span class="status-foc">FOC</span>
+      {% elif order.paid %}
+        <span class="status-paid">已付款 / Paid</span>
+      {% else %}
+        <span class="status-pending">待付款 / Pending</span>
+      {% endif %}
+    </div>
+    <div class="amount-label">需付款金额 / Amount to Pay</div>
+    <div class="amount-val">RM {{ order.total }}</div>
+    <div class="scan-label">扫码付款 / Scan to Pay</div>
+    <img class="qr-img" src="{{ qr_url }}" alt="QR Code for Payment">
+    <div class="contact-footer">
+      <div class="contact-label">有疑问请联系 Lily / For help, contact Lily:</div>
+      <a class="whatsapp-link" href="https://wa.me/60192151339" target="_blank">
+        <i class="bi bi-whatsapp" style="font-size:1.01em;"></i> +60-192151339
+      </a>
+    </div>
+
+    <!-- ←– New back‑buttons –→ -->
+    <div class="back-bottom-row">
+      <a href="{{ url_for('check') }}" class="btn-backregister">
+        返回查询 / Back to Check
+      </a>
+      <a href="{{ url_for('register') }}" class="btn-backregister">
+        重新登记 / New Registration
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Bulb hint open/close logic (same as your check page)
+    document.addEventListener('DOMContentLoaded', function(){
+      var bulb = document.getElementById('bulb');
+      var active = false;
+      bulb.addEventListener('click', function(e){
+        e.stopPropagation();
+        active = !active;
+        bulb.classList.toggle('active', active);
+      });
+      bulb.addEventListener('keydown', function(e){
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          bulb.click();
+        }
+      });
+      document.addEventListener('click', function(){
+        if (active) {
+          bulb.classList.remove('active');
+          active = false;
+        }
+      });
+      bulb.querySelector('.bulb-tooltip').addEventListener('click', function(e){
+        e.stopPropagation();
+      });
+    });
+  </script>
+</body>
+</html>
