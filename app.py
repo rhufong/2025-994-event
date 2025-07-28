@@ -25,11 +25,23 @@ recently_edited_submission = None  # <-- NEW: stores (subid, previous_data)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghostfest2025")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/ghostfest.db'
+
+if os.environ.get("RENDER") == "true":
+    # Running on Render, use persistent disk path
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/ghostfest.db'
+else:
+    # Local development - use local relative file
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ghostfest.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 print("Running app.py from:", os.path.abspath(__file__))
 print(">>> ABSOLUTE PATH THIS APP.PY:", os.path.abspath(__file__))
+
+# ---- MURL HEALTH CHECK ----
+@app.route("/healthz")
+def health_check():
+    return "OK"
 
 # ---- MODELS ----
 class SysState(db.Model):
