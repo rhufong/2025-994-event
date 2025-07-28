@@ -23,7 +23,6 @@ recently_deleted_submission = None
 recently_edited_submission = None  # <-- NEW: stores (subid, previous_data)
 
 
-
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghostfest2025")
 
@@ -35,15 +34,6 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
-# — your create_tables() definition goes here —
-def create_tables():
-    db.create_all()
-    # … etc …
-
-# — immediately invoke it, now that it's defined —
-with app.app_context():
-    create_tables()
 
 print("Running app.py from:", os.path.abspath(__file__))
 
@@ -80,7 +70,45 @@ class Owner(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(24), unique=True)
     password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(16))  # ADD THIS
+    role = db.Column(db.String(16))
+
+
+# ── INITIALIZATION: create all tables + seed initial data ─────────────────
+
+def create_tables():
+    # create all tables
+    db.create_all()
+
+    # seed Owner/Admin accounts
+    if not Owner.query.filter_by(username="owner").first():
+        db.session.add(Owner(
+            username="owner",
+            password_hash=generate_password_hash("PrincessRF"),
+            role="owner"
+        ))
+    if not Owner.query.filter_by(username="Lily").first():
+        db.session.add(Owner(
+            username="Lily",
+            password_hash=generate_password_hash("1228247"),
+            role="admin"
+        ))
+    if not Owner.query.filter_by(username="Admin").first():
+        db.session.add(Owner(
+            username="Admin",
+            password_hash=generate_password_hash("994Admin"),
+            role="admin"
+        ))
+
+    # seed the single SysState row
+    if not SysState.query.first():
+        db.session.add(SysState(pause=False))
+
+    db.session.commit()
+
+# run on every import (so Gunicorn sees it too)
+with app.app_context():
+    create_tables()
+
 
 # ---- HELPERS ----
 def now_utc8():
@@ -116,9 +144,9 @@ def label_date(entry):
     day = entry.get('day', '')
     calendar = entry.get('calendar', '')
     parts = []
-    if year: parts.append(f"{year}年")
+    if year:  parts.append(f"{year}年")
     if month: parts.append(f"{month}月")
-    if day: parts.append(f"{day}日")
+    if day:   parts.append(f"{day}日")
     date_str = " ".join(parts)
     if calendar:
         if calendar.lower() == "lunar":
@@ -129,50 +157,6 @@ def label_date(entry):
             date_str += f"（{calendar}）"
     return date_str.strip()
 
-# ---- INITIALIZATION ----
-def create_tables():
-    db.create_all()
-    # ==============================
-    #    ADMIN/OWNER PASSWORDS HERE
-    # ==============================
-    #    CHANGE THESE PASSWORDS FOR OWNER/ADMIN LOGIN
-    # ----------------------------------------------
-    #    Username: owner   Password: PrincessRF (role: owner)
-    #    Username: Lily    Password: 1228247    (role: admin)
-    #    Username: Admin   Password: 994Admin   (role: admin)
-    # ----------------------------------------------
-    #   (Change the password string if you want to update credentials.)
-    # ==============================
-
-    # Add users if not exist, with roles
-    if not Owner.query.filter_by(username="owner").first():
-        db.session.add(
-            Owner(
-                username="owner",
-                password_hash=generate_password_hash("PrincessRF"),
-                role="owner"
-            )
-        )
-    if not Owner.query.filter_by(username="Lily").first():
-        db.session.add(
-            Owner(
-                username="Lily",
-                password_hash=generate_password_hash("1228247"),
-                role="admin"
-            )
-        )
-    if not Owner.query.filter_by(username="Admin").first():
-        db.session.add(
-            Owner(
-                username="Admin",
-                password_hash=generate_password_hash("994Admin"),
-                role="admin"
-            )
-        )
-    db.session.commit()
-    if not SysState.query.first():
-        db.session.add(SysState(pause=False))
-        db.session.commit()
 
 # ---- USER ROUTES ----
 @app.route("/", methods=["GET", "POST"])
@@ -1112,8 +1096,6 @@ def admin_history():
     logs = AdminLog.query.order_by(AdminLog.ts.desc()).limit(200).all()
     return render_template("admin_history.html", logs=logs)
 
-
-
 # =======================
 #   END ADMIN ROUTES
 # =======================
@@ -1125,9 +1107,9 @@ def admin_history():
 def health_check():
     return "OK"
 
+# ←— main guard only starts the server —→
 if __name__ == "__main__":
-    with app.app_context():
-        create_tables()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+
 
