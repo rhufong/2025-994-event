@@ -164,6 +164,18 @@ def label_date(entry):
             date_str += f"（{calendar}）"
     return date_str.strip()
 
+def extract_local_phone(phone):
+    digits = ''.join(filter(str.isdigit, str(phone)))
+    # Remove leading '60' (Malaysia) or '65' (Singapore)
+    if digits.startswith('60'):
+        digits = digits[2:]
+    elif digits.startswith('65'):
+        digits = digits[2:]
+    # Remove leading '0' if present after country code is stripped
+    if digits.startswith('0'):
+        digits = digits[1:]
+    return digits
+
 
 # ---- USER ROUTES ----
 @app.route("/", methods=["GET", "POST"])
@@ -193,10 +205,16 @@ def register():
                 "month": request.form.get(f"d{i}_month", ""),
                 "day": request.form.get(f"d{i}_day", ""),
             })
-        exist = Submission.query.filter(
-            Submission.name_cn == name_cn,
-            db.func.substr(Submission.phone, -8) == phone[-8:]
-        ).first()
+        
+        # ------- UPDATED DUPLICATE CHECK -------
+        local_input = extract_local_phone(phone)
+        exist = None
+        for sub in Submission.query.filter_by(name_cn=name_cn):
+            local_db = extract_local_phone(sub.phone)
+            if local_db == local_input:
+                exist = sub
+                break
+        # ---------------------------------------
 
         if exist and confirm == "yes":
             exist.boat = boat
