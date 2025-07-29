@@ -622,7 +622,15 @@ def admin_mark_paid(subid):
 
     db.session.commit()
 
-    # 3. Stats: Always sum payment_amount for paid
+    # 3. Log this change
+    current_user = session.get('username', 'unknown')
+    log_admin(
+        action="Toggle paid" if sub.paid else "Toggle unpaid",
+        user=current_user,
+        detail=f"{'Marked PAID' if sub.paid else 'Marked UNPAID'} for Order ID: {sub.order_id}, Name: {sub.name_cn}, Amount: {sub.payment_amount}"
+    )
+
+    # 4. Stats: Always sum payment_amount for paid
     total_paid = db.session.query(db.func.sum(Submission.payment_amount)).filter_by(paid=True).scalar() or 0
 
     return jsonify({
@@ -1090,6 +1098,16 @@ def admin_delete(subid):
     }
     db.session.delete(sub)
     db.session.commit()
+
+    # ---- ADD THIS ----
+    current_user = session.get('username', 'unknown')
+    log_admin(
+        action="Delete submission",
+        user=current_user,
+        detail=f"Deleted submission Order ID: {sub.order_id}, Name: {sub.name_cn}"
+    )
+    # ------------------
+
     return jsonify({"ok": True})
 
 # Route to request delete approval (for admins)
