@@ -776,7 +776,7 @@ def admin_send_reminder(subid):
             "谢谢! Thank you! ☺️🙏"
         )
         number = sub.phone.replace("+", "").replace(" ", "")
-        link = f"https://wa.me/{number}?text={msg}"
+        link = f"https://wa.me/{number}?text={quote(msg)}"
 
         # Log the reminder action with the current user
         log_admin(
@@ -1093,7 +1093,7 @@ def admin_delete(subid):
     return jsonify({"ok": True})
 
 # Route to request delete approval (for admins)
-@app.route("/admin/request_delete_approval/<int:subid>", methods=["GET"])
+@app.route("/admin/request_delete_approval/<int:subid>", methods=["POST"])
 @login_required
 def admin_request_delete_approval(subid):
     if is_owner():
@@ -1117,7 +1117,8 @@ def admin_request_delete_approval(subid):
         detail=f"Requested owner approval to delete submission ID {subid} (Order ID {sub.order_id})"
     )
 
-    return redirect(wa_link)
+    return jsonify({"ok": True, "whatsapp_link": wa_link})
+
 
 # -----------------------
 #   ADMIN HISTORY ROUTE
