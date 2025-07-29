@@ -265,7 +265,10 @@ def review():
     phone = request.args.get("phone")
     if not oid or not phone:
         return redirect(url_for("register"))
-    sub = Submission.query.filter_by(order_id=oid, phone=phone).first()
+    sub = (Submission.query
+           .filter_by(order_id=oid, phone=phone)
+           .order_by(Submission.date.desc())  # << Add this line
+           .first())
     if not sub:
         flash("Submission not found.", "danger")
         return redirect(url_for("register"))
@@ -276,6 +279,7 @@ def review():
     elif sub.payment_method and sub.payment_method.lower() == "bank_transfer":
         qr_url = "/static/bank_transfer_qr_code.jpeg"
     return render_template("review.html", order=sub, entries=entries, qr_url=qr_url)
+
 
 @app.route("/confirm", methods=["POST"])
 def confirm():
@@ -747,7 +751,9 @@ def admin_send_reminder(subid):
             "您好。Hi. 👋🏻\n"
             "请尽快结清。Kindly settle your payment as soon as possible.\n"
             "To check your payment status and amount, please visit the link below:\n"
-            f"👉🏻 {check_link}\n"
+            "\n"
+            f"{check_link}\n"
+            "\n"
             f"Please enter your Order ID: {sub.order_id}\n"
             "谢谢! Thank you! ☺️🙏"
         )
@@ -1069,15 +1075,16 @@ def admin_delete(subid):
     return jsonify({"ok": True})
 
 # Route to request delete approval (for admins)
-@app.route("/admin/request_delete_approval/<int:subid>", methods=["POST"])
+@app.route("/admin/request_delete_approval/<int:subid>", methods=["GET"])
 @login_required
 def admin_request_delete_approval(subid):
     if is_owner():
-        return jsonify({"ok": False, "error": "Owner can delete directly."}), 400
+        flash("Owner can delete directly.", "danger")
+        return redirect(url_for("admin_dashboard"))
 
     sub = Submission.query.get_or_404(subid)
     current_user = session.get('username', 'unknown')
-    owner_phone = '60165207048'  # Owner's WhatsApp number without '+'
+    owner_phone = '60165207048'
 
     msg = (
         f"Admin {current_user} requests to DELETE submission:\n"
@@ -1092,7 +1099,7 @@ def admin_request_delete_approval(subid):
         detail=f"Requested owner approval to delete submission ID {subid} (Order ID {sub.order_id})"
     )
 
-    return jsonify({"ok": True, "whatsapp_link": wa_link})
+    return redirect(wa_link)
 
 # -----------------------
 #   ADMIN HISTORY ROUTE
