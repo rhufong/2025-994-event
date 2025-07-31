@@ -669,26 +669,23 @@ $(function(){
 
   // WhatsApp remind button with confirmation popup
   $(document).on('click', '.remind-btn', function(){
-      const id = $(this).data('id');
-      if (confirm("Are you sure you want to send a WhatsApp payment reminder?")) {
-          // Open a new blank window/tab (Safari workaround)
-          const newWindow = window.open('about:blank', '_blank');
-          $.post(`/admin/send_reminder/${id}`, {}, function(r){
-              if (r.ok && r.whatsapp_link) {
-                  // Success: open WhatsApp link
-                  if (newWindow) {
-                      newWindow.location = r.whatsapp_link;
-                  } else {
-                      // Fallback: manual tap/copy
-                      alert("Tap here to open WhatsApp: " + r.whatsapp_link);
-                  }
-              } else {
-                  // Error: Already paid or FOC
-                  if (newWindow) newWindow.close();
-                  alert(r.msg || 'Already paid or error occurred.');
-              }
-          });
-      }
+    const id = $(this).data('id');
+    if (confirm("Are you sure you want to send a WhatsApp payment reminder?")) {
+      // Open a new blank window/tab (Safari workaround)
+      const newWindow = window.open('about:blank', '_blank');
+      $.post(`/admin/send_reminder/${id}`, {}, function(r){
+        if (r.ok && r.whatsapp_link) {
+          if (newWindow) {
+            newWindow.location = r.whatsapp_link;
+          } else {
+            showToast(`<a href="${r.whatsapp_link}" target="_blank" style="color:white;">Tap here to open WhatsApp</a>`, "success");
+          }
+        } else {
+          if (newWindow) newWindow.close();
+          showToast(r.msg || 'Already paid or error occurred.', "danger");
+        }
+      });
+    }
   });
 
 

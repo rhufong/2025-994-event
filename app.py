@@ -768,24 +768,27 @@ def admin_edit(subid):
 @login_required
 def admin_send_reminder(subid):
     sub = Submission.query.get_or_404(subid)
-    current_user = session.get('username', 'unknown')  # get logged-in username or 'unknown'
+    current_user = session.get('username', 'unknown')
 
-    # --- (1) Already Paid ---
+    # If already paid, don't send
     if sub.paid:
         return jsonify({"ok": False, "msg": "Already paid."})
 
-    # --- (2) FOC / No Payment Needed ---
-    if sub.total == 0 or (sub.payment_amount == 0 and not sub.paid):
+    # If FOC (total 0), also don't send
+    if sub.total == 0:
         return jsonify({"ok": False, "msg": "No payment needed (FOC)."})
 
-    # --- (3) Not paid, Not FOC: Send Reminder (emoji included) ---
+    # If unpaid and total > 0, allow sending WhatsApp reminder
+    # (if you want to add emoji in the message, you can! Just make sure WhatsApp displays it correctly.)
     base_url = request.host_url.rstrip('/')
     check_link = f"{base_url}/check"
     msg = (
         "您好。Hi. 👋🏻\n"
         "请尽快结清。Kindly settle your payment as soon as possible.\n"
         "To check your payment status and amount, please visit the link below:\n"
+        "\n"
         f"{check_link}\n"
+        "\n"
         f"Please enter your Order ID: {sub.order_id}\n"
         "谢谢! Thank you! ☺️🙏"
     )
@@ -798,6 +801,7 @@ def admin_send_reminder(subid):
         detail=f"Sent reminder to {sub.phone} for Order ID {sub.order_id}"
     )
     return jsonify({"ok": True, "whatsapp_link": link})
+
 
 
 # -----------------------
