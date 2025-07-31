@@ -769,32 +769,35 @@ def admin_edit(subid):
 def admin_send_reminder(subid):
     sub = Submission.query.get_or_404(subid)
     current_user = session.get('username', 'unknown')  # get logged-in username or 'unknown'
-    if not sub.paid:
-        # Compose message with the link and order ID
-        base_url = request.host_url.rstrip('/')  # e.g., http://127.0.0.1:5000
-        check_link = f"{base_url}/check"
-        msg = (
-            "您好。Hi. 👋🏻\n"
-            "请尽快结清。Kindly settle your payment as soon as possible.\n"
-            "To check your payment status and amount, please visit the link below:\n"
-            "\n"
-            f"{check_link}\n"
-            "\n"
-            f"Please enter your Order ID: {sub.order_id}\n"
-            "谢谢! Thank you! ☺️🙏"
-        )
-        number = sub.phone.replace("+", "").replace(" ", "")
-        link = f"https://wa.me/{number}?text={quote(msg)}"
 
-        # Log the reminder action with the current user
-        log_admin(
-            action="Send WhatsApp reminder",
-            user=current_user,
-            detail=f"Sent reminder to {sub.phone} for Order ID {sub.order_id}"
-        )
-        return jsonify({"ok": True, "whatsapp_link": link})
-    return jsonify({"ok": False, "msg": "Already paid"})
+    # --- (1) Already Paid ---
+    if sub.paid:
+        return jsonify({"ok": False, "msg": "Already paid."})
 
+    # --- (2) FOC / No Payment Needed ---
+    if sub.total == 0 or (sub.payment_amount == 0 and not sub.paid):
+        return jsonify({"ok": False, "msg": "No payment needed (FOC)."})
+
+    # --- (3) Not paid, Not FOC: Send Reminder (emoji included) ---
+    base_url = request.host_url.rstrip('/')
+    check_link = f"{base_url}/check"
+    msg = (
+        "您好。Hi. 👋🏻\n"
+        "请尽快结清。Kindly settle your payment as soon as possible.\n"
+        "To check your payment status and amount, please visit the link below:\n"
+        f"{check_link}\n"
+        f"Please enter your Order ID: {sub.order_id}\n"
+        "谢谢! Thank you! ☺️🙏"
+    )
+    number = sub.phone.replace("+", "").replace(" ", "")
+    link = f"https://wa.me/{number}?text={quote(msg)}"
+
+    log_admin(
+        action="Send WhatsApp reminder",
+        user=current_user,
+        detail=f"Sent reminder to {sub.phone} for Order ID {sub.order_id}"
+    )
+    return jsonify({"ok": True, "whatsapp_link": link})
 
 
 # -----------------------
