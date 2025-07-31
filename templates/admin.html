@@ -671,11 +671,19 @@ $(function(){
   $(document).on('click', '.remind-btn', function(){
     const id = $(this).data('id');
     if (confirm("Are you sure you want to send a WhatsApp payment reminder?")) {
+      // Open a new blank window/tab (Safari workaround)
+      const newWindow = window.open('about:blank', '_blank');
       $.post(`/admin/send_reminder/${id}`, {}, function(r){
-        if(r.ok && r.whatsapp_link){
-          window.open(r.whatsapp_link, '_blank');
+        if (r.ok && r.whatsapp_link) {
+          if (newWindow) {
+            newWindow.location = r.whatsapp_link;
+          } else {
+            // Fallback: show link for manual tap
+            showToast(`<a href="${r.whatsapp_link}" target="_blank" style="color:white;">Tap here to open WhatsApp</a>`, "success");
+          }
         } else {
-          alert(r.msg || 'Already paid or error occurred.');
+          if (newWindow) newWindow.close();
+          showToast(r.msg || 'Already paid or error occurred.', "danger");
         }
       });
     }
