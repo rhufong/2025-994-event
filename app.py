@@ -437,6 +437,8 @@ def admin_dashboard():
                 )
             elif filter_type == "date":
                 q = q.filter(Submission.entries.like(f'%{filter_value}%'))
+            elif filter_type == "remarks":
+                 q = q.filter(Submission.remarks.ilike(f"%{filter_value}%"))
             else:
                 q = q.filter(
                     Submission.order_id.ilike(like) |
@@ -759,7 +761,6 @@ def admin_edit(subid):
         "remarks": sub.remarks,
         "entries": entries
     })
-
 
 # -----------------------
 #     WHATSAPP LINK
