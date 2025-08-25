@@ -17,7 +17,7 @@ from fpdf import FPDF
 
 from urllib.parse import quote
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 # --- Global for recent delete cache (only holds 1 most recent deleted record) ---
 recently_deleted_submission = None
@@ -430,36 +430,35 @@ def admin_dashboard():
             if filter_type == "gender":
                 q = q.filter(Submission.gender == filter_value)
             elif filter_type == "name":
-                q = q.filter(
-                    Submission.name_cn.ilike(f"%{filter_value}%") |
-                    Submission.name_en.ilike(f"%{filter_value}%") |
+                q = q.filter(or_(
+                    Submission.name_cn.ilike(f"%{filter_value}%"),
+                    Submission.name_en.ilike(f"%{filter_value}%"),
                     Submission.entries.like(f'%{filter_value}%')
-                )
+                ))
             elif filter_type == "date":
                 q = q.filter(Submission.entries.like(f'%{filter_value}%'))
             elif filter_type == "remarks":
                  q = q.filter(Submission.remarks.ilike(f"%{filter_value}%"))
             else:
-                q = q.filter(
-                    Submission.order_id.ilike(like) |
-                    Submission.name_cn.ilike(like) |
-                    Submission.name_en.ilike(like) |
+                q = q.filter(or_(
+                    Submission.order_id.ilike(like),
+                    Submission.name_cn.ilike(like),
+                    Submission.name_en.ilike(like),
                     Submission.phone.ilike(like)
-                )
+                ))
             q = q.order_by(Submission.date.desc())
             pagination = q.paginate(page=page, per_page=per_page, error_out=False)
             orders = pagination.items
 
-    else:
         # No filter or empty filter: normal pagination
-        if search:
-            like = f"%{search}%"
-            q = q.filter(
-                Submission.order_id.ilike(like) |
-                Submission.name_cn.ilike(like) |
-                Submission.name_en.ilike(like) |
-                Submission.phone.ilike(like)
-            )
+    else:
+        q = q.filter(or_(
+            Submission.order_id.ilike(like),
+            Submission.name_cn.ilike(like),
+            Submission.name_en.ilike(like),
+            Submission.phone.ilike(like)
+        ))
+
         q = q.order_by(Submission.date.desc())
         pagination = q.paginate(page=page, per_page=per_page, error_out=False)
         orders     = pagination.items
