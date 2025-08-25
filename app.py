@@ -366,6 +366,7 @@ def admin_dashboard():
     search       = request.args.get("search", "").strip()
     filter_type  = request.args.get("filter_type", "")
     filter_value = request.args.get("filter_value", "").strip()
+    like = f"%{filter_value}%" if filter_value else "%"
 
     # DEBUG: print some raw entries from the DB to check option values
     print("DEBUG: Sample entries JSON:")
